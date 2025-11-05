@@ -16,10 +16,10 @@ export const vendorSignup = async (req, res) => {
 
         await pool.query('INSERT INTO vendors (user_id, business_name, business_description) VALUES ($1, $2, $3)', [user_id, business_name, business_description])
 
+        // Don't update role to 'vendor' immediately - keep as 'user'
+        // Role will be updated to 'vendor' only when admin approves
 
-        await pool.query('UPDATE users SET role = $1 WHERE id = $2', ['vendor', user_id]);
-
-        const token = jwt.sign({ id: user_id, role: 'vendor' }, process.env.JWT_SECRET);
+        const token = jwt.sign({ id: user_id, role: 'user' }, process.env.JWT_SECRET);
 
         res.json({ token, message: 'Vendor application submitted successfully. Account pending approval.' });
 
