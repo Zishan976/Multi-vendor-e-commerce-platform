@@ -7,6 +7,7 @@ import categoryRouter from './routes/categoryRouter.js'
 import cartRouter from './routes/cartRouter.js'
 import orderRouter from './routes/orderRouter.js'
 import adminRouter from './routes/adminRouter.js'
+import paymentRouter from './routes/paymentRouter.js'
 import passport from './middleware/passportMiddleware.js'
 
 const app = express();
@@ -23,6 +24,7 @@ app.use('/api/categories', categoryRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/payments', paymentRouter);
 
 app.get('/', (req, res) => {
     res.send('Welcome to the Multi-Vendor E-Commerce Platform API');
