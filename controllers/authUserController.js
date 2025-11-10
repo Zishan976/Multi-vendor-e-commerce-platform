@@ -16,7 +16,7 @@ export const login = async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password" })
         };
 
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {
@@ -39,7 +39,7 @@ export const signup = async (req, res) => {
 
         const newUser = await pool.query('INSERT INTO users (username, email, password) VALUES ($1 ,$2, $3) RETURNING *', [username, email, hashPassword])
 
-        const token = jwt.sign({ id: newUser.rows[0].id, role: newUser.rows[0].role }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ id: newUser.rows[0].id, role: newUser.rows[0].role, email: newUser.rows[0].email }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         res.json({ token })
 
@@ -62,7 +62,7 @@ export const getUser = async (req, res) => {
 
 export const googleAuthCallback = (req, res) => {
 
-    const token = jwt.sign({ id: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: req.user.id, role: req.user.role, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
 
     res.redirect(`http://localhost:3000/auth/callback?token=${token}`);

@@ -1,4 +1,5 @@
 import { pool } from "../config/db.js";
+import { sendOrderConfirmationEmail } from "../utils/notificationService.js";
 
 export const createOrder = async (req, res) => {
     const client = await pool.connect();
@@ -47,6 +48,25 @@ export const createOrder = async (req, res) => {
         await client.query(`DELETE FROM cart_items WHERE cart_id = $1`, [cartResult.rows[0].cart_id]);
 
         await client.query('COMMIT');
+
+        // Send order confirmation email
+        try {
+            const userEmail = req.user.email;
+            const orderDetails = {
+                id: orderId,
+                total_amount: totalAmount,
+                status: 'pending',
+                items: cartResult.rows.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            };
+            await sendOrderConfirmationEmail(userEmail, orderDetails);
+        } catch (emailError) {
+            console.error('Failed to send order confirmation email:', emailError);
+            // Don't fail the order creation if email fails
+        }
 
         res.json({
             message: 'Order created successfully',

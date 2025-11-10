@@ -1,4 +1,5 @@
 import { pool } from "../config/db.js";
+import { sendVendorApprovalEmail, sendVendorRejectionEmail } from "../utils/notificationService.js";
 
 export const getPendingVendors = async (req, res) => {
     try {
@@ -24,7 +25,7 @@ export const approveVendor = async (req, res) => {
         const { vendorId } = req.params;
 
         const checkVendor = await client.query(
-            `SELECT v.user_id, v.status, u.role FROM vendors v
+            `SELECT v.user_id, v.status, u.role, u.email FROM vendors v
              JOIN users u ON v.user_id = u.id
              WHERE v.id = $1`,
             [vendorId]
@@ -59,6 +60,16 @@ export const approveVendor = async (req, res) => {
 
         await client.query('COMMIT');
 
+        // Send approval email
+        try {
+            const vendorDetails = updatedVendor.rows[0];
+            const userEmail = vendorData.email;
+            await sendVendorApprovalEmail(userEmail, vendorDetails);
+        } catch (emailError) {
+            console.error('Failed to send vendor approval email:', emailError);
+            // Don't fail the approval if email fails
+        }
+
         res.json({ message: 'Vendor approved successfully', vendor: updatedVendor.rows[0] });
     } catch (error) {
         await client.query('ROLLBACK');
@@ -75,12 +86,22 @@ export const rejectVendor = async (req, res) => {
         const { vendorId } = req.params;
 
         const result = await pool.query(
-            `UPDATE vendors SET status = 'rejected', updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
+            `UPDATE vendors SET status = 'rejected', updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *, (SELECT email FROM users WHERE id = user_id) as email`,
             [vendorId]
         );
 
         if (!result.rows.length) {
             return res.status(404).json({ error: 'Vendor not found' });
+        }
+
+        // Send rejection email
+        try {
+            const vendorDetails = result.rows[0];
+            const userEmail = vendorDetails.email;
+            await sendVendorRejectionEmail(userEmail, 'Application did not meet our requirements.');
+        } catch (emailError) {
+            console.error('Failed to send vendor rejection email:', emailError);
+            // Don't fail the rejection if email fails
         }
 
         res.json({ message: 'Vendor rejected successfully', vendor: result.rows[0] });

@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateVendor } from '../middleware/authVendorMiddleware.js';
 import { addVendorProducts, deleteVendorProducts, getAllProducts, getProductsByCategory, getProductById, getVendorProduct, getVendorProducts, updateVendorProducts } from '../controllers/productController.js';
+import { uploadProductImage } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -16,9 +17,9 @@ router.get('/products', getVendorProducts);
 
 router.get('/product/:productId', getVendorProduct);
 
-router.post('/products', addVendorProducts);
+router.post('/products', uploadProductImage, addVendorProducts);
 
-router.put('/product/:productId', updateVendorProducts);
+router.put('/product/:productId', uploadProductImage, updateVendorProducts);
 
 router.delete('/product/:productId', deleteVendorProducts);
 

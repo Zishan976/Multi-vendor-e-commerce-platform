@@ -9,11 +9,18 @@ import orderRouter from './routes/orderRouter.js'
 import adminRouter from './routes/adminRouter.js'
 import paymentRouter from './routes/paymentRouter.js'
 import passport from './middleware/passportMiddleware.js'
+import { testEmailConnection } from './config/emailConfig.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// Static files
+app.use('/uploads', express.static('uploads'));
+
+// Test email connection on startup (optional)
+testEmailConnection();
 
 app.use(passport.initialize());
 

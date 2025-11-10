@@ -187,7 +187,7 @@ export const getVendorProduct = async (req, res) => {
 
 export const addVendorProducts = async (req, res) => {
     const { id: userId } = req.user;
-    const { name, description, price, stock_quantity, image_url, category_id, status } = req.body;
+    const { name, description, price, stock_quantity, category_id, status } = req.body;
 
     if (!name || !price) {
         return res.status(400).json({ error: 'Name and price are required' });
@@ -209,6 +209,18 @@ export const addVendorProducts = async (req, res) => {
             return res.status(404).json({ error: 'Vendor not found' });
         }
         const vendorId = vendorResult.rows[0].id;
+
+        // Check for duplicate product name within the same vendor
+        const checkName = await pool.query('SELECT * FROM products WHERE name = $1 AND vendor_id = $2', [name, vendorId]);
+
+        if (checkName.rows.length > 0) {
+            return res.status(400).json({ error: 'This product name already exists in your store' })
+        }
+
+        let image_url = null;
+        if (req.file) {
+            image_url = `/uploads/products/${req.file.filename}`;
+        }
 
         const addProducts = await pool.query('INSERT INTO products (vendor_id, category_id, name, description, price, stock_quantity, image_url, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [vendorId, category_id, name, description, price, stock_quantity, image_url, status]);
 
@@ -222,7 +234,7 @@ export const addVendorProducts = async (req, res) => {
 export const updateVendorProducts = async (req, res) => {
     const { id: userId } = req.user;
     const { productId } = req.params;
-    const { name, description, price, stock_quantity, image_url, category_id, status } = req.body;
+    const { name, description, price, stock_quantity, category_id, status } = req.body;
 
     if (!name || !price) {
         return res.status(400).json({ error: 'Name and price are required' });
@@ -244,6 +256,11 @@ export const updateVendorProducts = async (req, res) => {
             return res.status(404).json({ error: 'Vendor not found' });
         }
         const vendorId = vendorResult.rows[0].id;
+
+        let image_url = null;
+        if (req.file) {
+            image_url = `/uploads/products/${req.file.filename}`;
+        }
 
         const updateProduct = await pool.query('UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, image_url = $5, category_id = $6, status = $7 WHERE id = $8 AND vendor_id = $9 RETURNING *', [name, description, price, stock_quantity, image_url, category_id, status, productId, vendorId]);
 
