@@ -1,4 +1,10 @@
 import { pool } from "../config/db.js";
+import { uploadToCloudinary, deleteLocalFile } from "../utils/cloudinaryService.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const getAllProducts = async (req, res) => {
     try {
@@ -219,7 +225,17 @@ export const addVendorProducts = async (req, res) => {
 
         let image_url = null;
         if (req.file) {
-            image_url = `/uploads/products/${req.file.filename}`;
+            const localFilePath = path.join(__dirname, '../uploads/products', req.file.filename);
+            try {
+                // Upload to Cloudinary
+                image_url = await uploadToCloudinary(localFilePath);
+                // Delete local file after successful upload
+                deleteLocalFile(localFilePath);
+            } catch (uploadError) {
+                console.error('Cloudinary upload failed:', uploadError);
+                // Still save the product but with local URL as fallback
+                image_url = `/uploads/products/${req.file.filename}`;
+            }
         }
 
         const addProducts = await pool.query('INSERT INTO products (vendor_id, category_id, name, description, price, stock_quantity, image_url, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [vendorId, category_id, name, description, price, stock_quantity, image_url, status]);
@@ -259,7 +275,17 @@ export const updateVendorProducts = async (req, res) => {
 
         let image_url = null;
         if (req.file) {
-            image_url = `/uploads/products/${req.file.filename}`;
+            const localFilePath = path.join(__dirname, '../uploads/products', req.file.filename);
+            try {
+                // Upload to Cloudinary
+                image_url = await uploadToCloudinary(localFilePath);
+                // Delete local file after successful upload
+                deleteLocalFile(localFilePath);
+            } catch (uploadError) {
+                console.error('Cloudinary upload failed:', uploadError);
+                // Still save the product but with local URL as fallback
+                image_url = `/uploads/products/${req.file.filename}`;
+            }
         }
 
         const updateProduct = await pool.query('UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, image_url = $5, category_id = $6, status = $7 WHERE id = $8 AND vendor_id = $9 RETURNING *', [name, description, price, stock_quantity, image_url, category_id, status, productId, vendorId]);

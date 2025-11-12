@@ -23,7 +23,7 @@ export const login = async (req, res) => {
         res.status(500).json({ error: "Login failed" })
     }
 
-}
+};
 
 export const signup = async (req, res) => {
     const { username, email, password } = req.body;
@@ -46,7 +46,7 @@ export const signup = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Signup failed" })
     }
-}
+};
 
 export const getUser = async (req, res) => {
     const { id } = req.user;
@@ -58,12 +58,12 @@ export const getUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Failed to get user" })
     }
-}
+};
 
 export const googleAuthCallback = (req, res) => {
 
     const token = jwt.sign({ id: req.user.id, role: req.user.role, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-
-    res.redirect(`http://localhost:3000/auth/callback?token=${token}`);
+    const base_url = process.env.BASE_URL || 'http://localhost:3000';
+    res.redirect(`${base_url}/auth/callback?token=${token}`);
 };
