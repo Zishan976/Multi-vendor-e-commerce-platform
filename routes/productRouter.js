@@ -1,12 +1,14 @@
 import express from 'express';
 import { authenticateVendor } from '../middleware/authVendorMiddleware.js';
-import { addVendorProducts, deleteVendorProducts, getAllProducts, getProductsByCategory, getProductById, getVendorProduct, getVendorProducts, updateVendorProducts } from '../controllers/productController.js';
+import { addVendorProducts, deleteVendorProducts, getAllProducts, getProductsByCategory, getProductById, getVendorProduct, getVendorProducts, updateVendorProducts, getLatestProducts, getBestProducts } from '../controllers/productController.js';
 import { uploadProductImage } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
 // Public routes (no authentication required)
 router.get('/public/products', getAllProducts);
+router.get('/public/products/latest', getLatestProducts)
+router.get('/public/products/best', getBestProducts)
 router.get('/public/products/:id', getProductById);
 router.get('/public/categories/:categoryId/products', getProductsByCategory);
 

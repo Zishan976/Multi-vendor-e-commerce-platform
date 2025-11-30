@@ -77,6 +77,46 @@ export const getAllProducts = async (req, res) => {
     }
 };
 
+export const getLatestProducts = async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+
+        const productsResult = await pool.query(`SELECT p.*, c.name as category_name, v.business_name as vendor_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN vendors v ON p.vendor_id = v.id
+        WHERE p.status = 'active'
+        ORDER BY p.created_at DESC
+        LIMIT $1`, [limit]);
+
+        res.json({ products: productsResult.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch latest products' });
+    }
+};
+
+export const getBestProducts = async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+
+        // For now, I'll use products with highest stock as a proxy for "best"
+        const productsResult = await pool.query(`
+        SELECT p.*, c.name as category_name, v.business_name as vendor_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN vendors v ON p.vendor_id = v.id
+        WHERE p.status = 'active'
+        ORDER BY p.stock_quantity DESC, p.created_at DESC
+        LIMIT $1`, [limit]);
+
+        res.json({ products: productsResult.rows });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch best products' });
+    }
+};
 
 export const getProductById = async (req, res) => {
     try {
