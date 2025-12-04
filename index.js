@@ -26,7 +26,7 @@ app.use(passport.initialize());
 
 app.use('/api/auth', authUserRouter);
 app.use('/api/vendor', vendorRouter);
-app.use('/api/vendor', productRouter);
+app.use('/api/products', productRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);

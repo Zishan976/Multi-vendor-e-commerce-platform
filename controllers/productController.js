@@ -79,7 +79,7 @@ export const getAllProducts = async (req, res) => {
 
 export const getLatestProducts = async (req, res) => {
     try {
-        const { limit = 10 } = req.query;
+        const { limit = 4 } = req.query;
 
         const productsResult = await pool.query(`SELECT p.*, c.name as category_name, v.business_name as vendor_name
         FROM products p

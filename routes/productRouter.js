@@ -6,24 +6,24 @@ import { uploadProductImage } from '../middleware/uploadMiddleware.js';
 const router = express.Router();
 
 // Public routes (no authentication required)
-router.get('/public/products', getAllProducts);
-router.get('/public/products/latest', getLatestProducts)
-router.get('/public/products/best', getBestProducts)
-router.get('/public/products/:id', getProductById);
-router.get('/public/categories/:categoryId/products', getProductsByCategory);
+router.get('/public', getAllProducts);
+router.get('/public/latest', getLatestProducts)
+router.get('/public/best', getBestProducts)
+router.get('/public/:id', getProductById);
+router.get('/public/categories/:categoryId', getProductsByCategory);
 
 // Vendor authentication required for all routes below
 router.use(authenticateVendor);
 
-router.get('/products', getVendorProducts);
+router.get('/vendor', getVendorProducts);
 
-router.get('/product/:productId', getVendorProduct);
+router.get('/vendor/:productId', getVendorProduct);
 
-router.post('/products', uploadProductImage, addVendorProducts);
+router.post('/vendor', uploadProductImage, addVendorProducts);
 
-router.put('/product/:productId', uploadProductImage, updateVendorProducts);
+router.put('/vendor/:productId', uploadProductImage, updateVendorProducts);
 
-router.delete('/product/:productId', deleteVendorProducts);
+router.delete('/vendor/:productId', deleteVendorProducts);
 
 export default router;
 
