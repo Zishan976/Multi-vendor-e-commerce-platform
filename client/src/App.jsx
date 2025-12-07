@@ -1,3 +1,4 @@
+import BestSelling from "./Components/BestSelling";
 import Hero from "./Components/Hero";
 import LatestProducts from "./Components/LatestProducts";
 import Navbar from "./Components/Navbar";
@@ -10,6 +11,7 @@ export default function App() {
       <Navbar />
       <Hero />
       <LatestProducts />
+      <BestSelling />
     </div>
   );
 }

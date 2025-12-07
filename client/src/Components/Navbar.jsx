@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Menu } from "lucide-react";
 import Filter from "./Filter";
+import { api } from "../utils/api";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,9 +11,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/categories`
-        );
+        const response = await api.get("/categories");
         setCategories(response.data);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
