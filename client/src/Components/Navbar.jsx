@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, Menu } from "lucide-react";
 import Filter from "./Filter";
 import { api } from "../utils/api";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,13 +41,17 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <ul className="hidden md:flex gap-6 text-gray-700 font-medium">
-            <li className="hover:text-green-600 cursor-pointer">Home</li>
-            <li className="hover:text-green-600 cursor-pointer">Shop</li>
-            <li className="border-b-2 border-green-500 cursor-pointer">
-              Seller
+            <li className="hover:text-green-600 cursor-pointer">
+              <Link to="/">Home</Link>
+            </li>
+            <li className="hover:text-green-600 cursor-pointer">
+              <Link to="/shop">Shop</Link>
             </li>
             <li className="border-b-2 border-green-500 cursor-pointer">
-              Admin
+              <Link to="/seller">Seller</Link>
+            </li>
+            <li className="border-b-2 border-green-500 cursor-pointer">
+              <Link to="/admin">Admin</Link>
             </li>
           </ul>
 

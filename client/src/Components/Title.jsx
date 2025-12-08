@@ -5,8 +5,8 @@ const Title = ({ title, description, visibleButton = true, href = "" }) => {
   return (
     <div className="flex flex-col items-center">
       <h2 className="text-2xl font-semibold text-slate-800">{title}</h2>
-      <a
-        href={href}
+      <Link
+        to={href}
         className="flex items-center gap-5 text-sm text-slate-600 mt-2"
       >
         <p className="max-w-lg text-center">{description}</p>
@@ -15,7 +15,7 @@ const Title = ({ title, description, visibleButton = true, href = "" }) => {
             View more <ArrowRight size={14} />
           </button>
         )}
-      </a>
+      </Link>
     </div>
   );
 };

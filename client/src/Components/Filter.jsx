@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../utils/api";
 
 const Filter = () => {
   const [categories, setCategories] = useState([]);
@@ -8,9 +8,7 @@ const Filter = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/categories`
-        );
+        const response = await api.get("/categories");
         setCategories(response.data);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
