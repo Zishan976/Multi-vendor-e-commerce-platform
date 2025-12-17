@@ -9,12 +9,13 @@ const Shop = () => {
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page = 1) => {
     try {
       setLoading(true);
       setError(false);
-      const response = await api.get("/products/public");
+      const response = await api.get(`/products/public?page=${page}`);
       setProducts(response.data.products);
       setPagination(response.data.pagination);
     } catch (error) {
@@ -26,8 +27,8 @@ const Shop = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(currentPage);
+  }, [currentPage]);
 
   return (
     <div className="min-h-[70vh] mx-6">
@@ -48,12 +49,7 @@ const Shop = () => {
             ))
           )}
         </div>
-        <Pagination
-          pagination={pagination}
-          onPageChange={(page) =>
-            setPagination((prev) => ({ ...prev, currentPage: page }))
-          }
-        />
+        <Pagination pagination={pagination} onPageChange={setCurrentPage} />
       </div>
     </div>
   );
