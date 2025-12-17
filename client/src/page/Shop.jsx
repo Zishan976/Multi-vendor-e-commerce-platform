@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { api } from "../utils/api";
 import Loading from "../Components/Loading";
 import ProductCard from "../Components/ProductCard";
+import Pagination from "../Components/Pagination";
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -14,6 +16,7 @@ const Shop = () => {
       setError(false);
       const response = await api.get("/products/public");
       setProducts(response.data.products);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error(error);
       setError(true);
@@ -45,6 +48,12 @@ const Shop = () => {
             ))
           )}
         </div>
+        <Pagination
+          pagination={pagination}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, currentPage: page }))
+          }
+        />
       </div>
     </div>
   );
