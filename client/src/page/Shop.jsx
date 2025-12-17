@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../utils/api";
 import Loading from "../Components/Loading";
 import ProductCard from "../Components/ProductCard";
@@ -10,12 +11,16 @@ const Shop = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams] = useSearchParams();
 
-  const fetchProducts = async (page = 1) => {
+  const fetchProducts = async (page = 1, search = "", categoryId = "") => {
     try {
       setLoading(true);
       setError(false);
-      const response = await api.get(`/products/public?page=${page}`);
+      let url = `/products/public?page=${page}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (categoryId) url += `&category_id=${categoryId}`;
+      const response = await api.get(url);
       setProducts(response.data.products);
       setPagination(response.data.pagination);
     } catch (error) {
@@ -27,8 +32,18 @@ const Shop = () => {
   };
 
   useEffect(() => {
-    fetchProducts(currentPage);
-  }, [currentPage]);
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("category_id") || "";
+    fetchProducts(currentPage, search, categoryId);
+  }, [currentPage, searchParams]);
+
+  useEffect(() => {
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("category_id") || "";
+    if (search || categoryId) {
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-[70vh] mx-6">
