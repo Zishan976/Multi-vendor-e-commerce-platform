@@ -1,49 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api } from "../utils/api";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchProducts } from "../store/slices/productsSlice";
 import Loading from "../Components/Loading";
 import ProductCard from "../Components/ProductCard";
 import Pagination from "../Components/Pagination";
 
 const Shop = () => {
-  const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const dispatch = useDispatch();
+  const { products, pagination, loading, error } = useSelector(
+    (state) => state.products
+  );
   const [searchParams] = useSearchParams();
 
-  const fetchProducts = async (page = 1, search = "", categoryId = "") => {
-    try {
-      setLoading(true);
-      setError(false);
-      let url = `/products/public?page=${page}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
-      if (categoryId) url += `&category_id=${categoryId}`;
-      const response = await api.get(url);
-      setProducts(response.data.products);
-      setPagination(response.data.pagination);
-    } catch (error) {
-      console.error(error);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("category_id") || "";
+    dispatch(fetchProducts({ page: 1, search, categoryId }));
+  }, [searchParams, dispatch]);
+
+  const handlePageChange = (page) => {
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("category_id") || "";
+    dispatch(fetchProducts({ page, search, categoryId }));
   };
-
-  useEffect(() => {
-    const search = searchParams.get("search") || "";
-    const categoryId = searchParams.get("category_id") || "";
-    fetchProducts(currentPage, search, categoryId);
-  }, [currentPage, searchParams]);
-
-  useEffect(() => {
-    const search = searchParams.get("search") || "";
-    const categoryId = searchParams.get("category_id") || "";
-    if (search || categoryId) {
-      setCurrentPage(1);
-    }
-  }, [searchParams]);
 
   return (
     <div className="min-h-[70vh] mx-6">
@@ -64,7 +44,7 @@ const Shop = () => {
             ))
           )}
         </div>
-        <Pagination pagination={pagination} onPageChange={setCurrentPage} />
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </div>
     </div>
   );
