@@ -90,7 +90,7 @@ const UserManagement = ({
                     <button
                       onClick={() => handleUpdateRole(user.id)}
                       disabled={actionLoading === user.id}
-                      className="bg-blue-500 text-white px-4 py-2 rounded ml-2 hover:bg-blue-600 disabled:opacity-50"
+                      className="bg-green-500 text-white px-4 py-2 rounded ml-2 hover:bg-green-600 disabled:opacity-50"
                     >
                       {actionLoading === user.id ? "Updating..." : "Update"}
                     </button>

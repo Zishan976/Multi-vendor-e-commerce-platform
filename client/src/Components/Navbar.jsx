@@ -43,18 +43,10 @@ const Navbar = () => {
       <nav className="bg-white shadow-md text-slate-600 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
-          <a href="/">
-            <div
-              className="text-2xl sm:text-3xl font-bold text-green-600 font-serif italic tracking-wide flex items-center"
-              style={{
-                fontFamily:
-                  "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-              }}
-            >
-              Swift<span className="text-blue-900">Cart</span>
-              <span className="text-4xl leading-none">.</span>
-            </div>
-          </a>
+          <Link to="/" className="text-4xl font-semibold text-green-600">
+            Swift<span className="text-blue-900">Cart</span>
+            <span className="text-4xl leading-none">.</span>
+          </Link>
 
           {/* Desktop Navigation */}
           <ul className="hidden md:flex gap-6 text-gray-700 font-medium">

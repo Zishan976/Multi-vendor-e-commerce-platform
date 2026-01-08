@@ -46,14 +46,16 @@ const Footer = () => {
     { icon: LinkedinIcon, link: "https://www.linkedin.com" },
   ];
 
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="mx-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-start justify-between gap-10 py-10 border-b border-slate-500/30 text-slate-500">
           <div>
-            <Link to="/" className="text-4xl font-semibold text-slate-700">
-              <span className="text-green-600">go</span>cart
-              <span className="text-green-600 text-5xl leading-0">.</span>
+            <Link to="/" className="text-4xl font-semibold text-green-600">
+              Swift<span className="text-blue-900">Cart</span>
+              <span className="text-4xl leading-none">.</span>
             </Link>
             <p className="max-w-[410px] mt-6 text-sm">
               Welcome to SwiftCart, your ultimate destination for the latest and
@@ -97,7 +99,8 @@ const Footer = () => {
           </div>
         </div>
         <p className="py-4 text-sm text-slate-500">
-          Copyright 2025 © gocart All Right Reserved.
+          Copyright {currentYear} © SwiftCart and Khalilur Rahman Zishan All
+          Right Reserved.
         </p>
       </div>
     </footer>
