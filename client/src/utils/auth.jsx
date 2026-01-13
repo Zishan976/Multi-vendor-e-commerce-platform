@@ -18,6 +18,11 @@ export const isAdmin = () => {
   return user && user.role === "admin";
 };
 
+export const isVendor = () => {
+  const user = getUserFromToken();
+  return user && user.role === "vendor";
+};
+
 export const isAuthenticated = () => {
   const token = localStorage.getItem("token");
   if (!token) return false;

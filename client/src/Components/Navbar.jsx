@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
-import { ShoppingCart, Menu } from "lucide-react";
+import { ShoppingCart, Menu, LogOut } from "lucide-react";
 import Filter from "./Filter";
 import { api } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
+import LoginModal from "./LoginModal";
+import { isAuthenticated, getUserFromToken } from "../utils/auth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -37,6 +42,30 @@ const Navbar = () => {
     };
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      if (authenticated) {
+        const userData = getUserFromToken();
+        setUser(userData);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLoginSuccess = () => {
+    const userData = getUserFromToken();
+    setUser(userData);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setIsLoggedIn(false);
+  };
 
   return (
     <>
@@ -90,7 +119,7 @@ const Navbar = () => {
             </select>
           </div>
 
-          {/* Cart + Login (Always Visible) */}
+          {/* Cart + Auth (Always Visible) */}
           <div className="flex items-center gap-4">
             <div className="relative">
               <ShoppingCart className="w-6 h-6 text-gray-700" />
@@ -98,9 +127,27 @@ const Navbar = () => {
                 9
               </span>
             </div>
-            <button className="bg-green-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-green-700 transition">
-              Login
-            </button>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-700 text-sm md:text-base">
+                  Welcome, {user?.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-red-700 transition flex items-center gap-1"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-green-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-green-700 transition"
+              >
+                Login
+              </button>
+            )}
 
             {/* Mobile Hamburger */}
             <button
@@ -129,6 +176,11 @@ const Navbar = () => {
         )}
       </nav>
       <Filter />
+      <LoginModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </>
   );
 };

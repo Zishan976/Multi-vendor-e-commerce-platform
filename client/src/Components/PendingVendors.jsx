@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Loading from "./Loading";
 import { api } from "../utils/api";
+import { RefreshCcw } from "lucide-react";
 
 const PendingVendors = ({
   pendingVendors,
@@ -47,7 +48,16 @@ const PendingVendors = ({
   return (
     <>
       <div className="max-w-6xl mx-auto px-6 my-10">
-        <h2 className="text-2xl font-semibold mb-4">Pending Vendors</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold mb-6">Pending Vendors</h1>
+          <button
+            onClick={fetchPendingVendors}
+            disabled={loading}
+            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCcw className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
         <input
           type="text"
           placeholder="Search pending vendors by name or email..."

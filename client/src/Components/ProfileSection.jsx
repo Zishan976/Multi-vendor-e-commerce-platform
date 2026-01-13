@@ -1,0 +1,128 @@
+import React, { useState, useEffect } from "react";
+import { api } from "../utils/api";
+import Loading from "./Loading";
+
+const ProfileSection = () => {
+  const [profile, setProfile] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  const [formData, setFormData] = useState({
+    business_name: "",
+    business_description: "",
+  });
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get("/vendor/profile");
+      setProfile(response.data);
+      setFormData({
+        business_name: response.data.business_name,
+        business_description: response.data.business_description,
+      });
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      setError("Failed to load profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      setUpdating(true);
+      setError(null);
+      await api.put("/vendor/profile", formData);
+      setIsEditing(false);
+      fetchProfile(); // Refresh data
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setError("Failed to update profile. Please try again.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-blue-600 pb-2">
+        Vendor Profile
+      </h2>
+      {error && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4 border border-red-300">
+          {error}
+        </div>
+      )}
+      {isEditing ? (
+        <form onSubmit={handleUpdate} className="flex flex-col gap-4 max-w-md">
+          <input
+            type="text"
+            value={formData.business_name}
+            onChange={(e) =>
+              setFormData({ ...formData, business_name: e.target.value })
+            }
+            placeholder="Business Name"
+            required
+            className="p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          />
+          <textarea
+            value={formData.business_description}
+            onChange={(e) =>
+              setFormData({ ...formData, business_description: e.target.value })
+            }
+            placeholder="Business Description"
+            required
+            className="p-3 border border-gray-300 rounded resize-vertical min-h-32 focus:outline-none focus:border-blue-500"
+          />
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={updating}
+              className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {updating ? "Saving..." : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-5 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div>
+          <p className="mb-3">
+            <strong className="text-gray-700">Business Name:</strong>{" "}
+            {profile.business_name}
+          </p>
+          <p className="mb-4">
+            <strong className="text-gray-700">Description:</strong>{" "}
+            {profile.business_description}
+          </p>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Edit Profile
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProfileSection;

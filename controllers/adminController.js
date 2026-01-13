@@ -147,3 +147,28 @@ export const updateUserRole = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while updating the user role' });
     }
 };
+
+export const getAdminStats = async (req, res) => {
+    try {
+        // Get total users
+        const totalUsersResult = await pool.query('SELECT COUNT(*) as count FROM users');
+        const totalUsers = parseInt(totalUsersResult.rows[0].count);
+
+        // Get pending vendors count
+        const pendingVendorsResult = await pool.query('SELECT COUNT(*) as count FROM vendors WHERE status = $1', ['pending']);
+        const pendingVendorsCount = parseInt(pendingVendorsResult.rows[0].count);
+
+        // Get approved vendors count
+        const approvedVendorsResult = await pool.query('SELECT COUNT(*) as count FROM users WHERE role = $1', ['vendor']);
+        const approvedVendorsCount = parseInt(approvedVendorsResult.rows[0].count);
+
+        res.json({
+            totalUsers,
+            pendingVendorsCount,
+            approvedVendorsCount
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch admin stats' });
+    }
+};

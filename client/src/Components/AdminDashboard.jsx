@@ -1,7 +1,10 @@
 import React from "react";
 import AdminDashboardCount from "./AdminDashboardCount";
+import { RefreshCcw } from "lucide-react";
 
 const AdminDashboard = ({
+  fetchStats,
+  loadingStats,
   totalUsers,
   pendingVendorsCount,
   approvedVendorsCount,
@@ -10,7 +13,16 @@ const AdminDashboard = ({
 }) => {
   return (
     <div className="max-w-6xl mx-auto px-6 my-10">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+        <button
+          onClick={fetchStats}
+          disabled={loadingStats}
+          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCcw className={loadingStats ? "animate-spin" : ""} />
+        </button>
+      </div>
       {success && <div className="text-green-600 mb-4">{success}</div>}
       {error && <div className="text-red-600 mb-4">{error}</div>}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
