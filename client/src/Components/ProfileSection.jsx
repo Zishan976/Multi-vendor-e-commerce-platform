@@ -2,38 +2,22 @@ import React, { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import Loading from "./Loading";
 
-const ProfileSection = () => {
-  const [profile, setProfile] = useState({});
+const ProfileSection = ({
+  profile,
+  formData,
+  setFormData,
+  loadingProfile,
+  fetchProfile,
+  setSuccess,
+  errorProfile,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
-  const [formData, setFormData] = useState({
-    business_name: "",
-    business_description: "",
-  });
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.get("/vendor/profile");
-      setProfile(response.data);
-      setFormData({
-        business_name: response.data.business_name,
-        business_description: response.data.business_description,
-      });
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      setError("Failed to load profile. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setError(errorProfile);
+  }, [errorProfile]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -41,6 +25,7 @@ const ProfileSection = () => {
       setUpdating(true);
       setError(null);
       await api.put("/vendor/profile", formData);
+      setSuccess("Profile updated successfully.");
       setIsEditing(false);
       fetchProfile(); // Refresh data
     } catch (error) {
@@ -51,7 +36,7 @@ const ProfileSection = () => {
     }
   };
 
-  if (loading) {
+  if (loadingProfile) {
     return <Loading />;
   }
 

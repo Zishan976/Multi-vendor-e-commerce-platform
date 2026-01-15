@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import Loading from "./Loading";
+import { RefreshCcw } from "lucide-react";
 
-const ProductsSection = () => {
-  const [products, setProducts] = useState([]);
+const ProductsSection = ({
+  products,
+  loadingProducts,
+  fetchProducts,
+  errorProducts,
+  setSuccess,
+}) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    setError(errorProducts);
+  }, [errorProducts]);
 
   useEffect(() => {
     // Filter products based on search term
@@ -25,26 +30,13 @@ const ProductsSection = () => {
     setFilteredProducts(filtered);
   }, [products, searchTerm]);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.get("/products/vendor");
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      setError("Failed to load products. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (productId) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         setDeleting(productId);
         setError(null);
         await api.delete(`/products/vendor/${productId}`);
+        setSuccess("Product deleted successfully.");
         fetchProducts(); // Refresh list
       } catch (error) {
         console.error("Error deleting product:", error);
@@ -55,15 +47,20 @@ const ProductsSection = () => {
     }
   };
 
-  if (loading) {
-    return <Loading />;
-  }
-
   return (
     <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-blue-600 pb-2">
-        My Products
-      </h2>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-blue-600 pb-2">
+          My Products
+        </h2>
+        <button
+          onClick={fetchProducts}
+          disabled={loadingProducts}
+          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCcw className={loadingProducts ? "animate-spin" : ""} />
+        </button>
+      </div>
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded mb-4 border border-red-300">
           {error}
@@ -93,36 +90,42 @@ const ProductsSection = () => {
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
-        {filteredProducts.map((product) => (
-          <div key={product.id} className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {product.name}
-            </h3>
-            <p className="text-gray-600 mb-2">{product.description}</p>
-            <p className="text-lg font-bold text-green-600 mb-3">
-              Price: ${product.price}
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  /* Implement edit */
-                }}
-                className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600 transition-colors"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(product.id)}
-                disabled={deleting === product.id}
-                className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
-              >
-                {deleting === product.id ? "Deleting..." : "Delete"}
-              </button>
+      {loadingProducts ? (
+        <Loading />
+      ) : filteredProducts.length === 0 ? (
+        <p className="text-gray-600">No products found.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {product.name}
+              </h3>
+              <p className="text-gray-600 mb-2">{product.description}</p>
+              <p className="text-lg font-bold text-green-600 mb-3">
+                Price: ${product.price}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    /* Implement edit */
+                  }}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  disabled={deleting === product.id}
+                  className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {deleting === product.id ? "Deleting..." : "Delete"}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -86,3 +86,61 @@ export const updateVendorProfile = async (req, res) => {
         res.status(500).json({ error: 'Failed to update vendor profile' });
     }
 }
+
+export const getVenderStatus = async (req, res) => {
+    const { id: user_id, role } = req.user;
+    if (role !== 'vendor') {
+        return res.status(403).json({ error: 'Access denied. Vendor role required' });
+    }
+    try {
+        // Fetch vendor details
+        const vendorQuery = await pool.query('SELECT id, status FROM vendors WHERE user_id = $1', [user_id]);
+        if (!vendorQuery.rows.length) {
+            return res.status(404).json({ error: 'Vendor not found' });
+        }
+        const vendor = vendorQuery.rows[0];
+        if (vendor.status !== 'approved') {
+            return res.status(403).json({ error: 'Vendor account not approved' });
+        }
+        const vendor_id = vendor.id;
+
+        // Total products
+        const totalProductsQuery = await pool.query('SELECT COUNT(*) as total FROM products WHERE vendor_id = $1', [vendor_id]);
+        const totalProducts = parseInt(totalProductsQuery.rows[0].total);
+
+        // Total orders (distinct orders containing vendor's products)
+        const totalOrdersQuery = await pool.query(`
+            SELECT COUNT(DISTINCT o.id) as total
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE p.vendor_id = $1
+        `, [vendor_id]);
+        const totalOrders = parseInt(totalOrdersQuery.rows[0].total);
+
+        // Total revenue (sum of quantity * price for non-cancelled orders)
+        const totalRevenueQuery = await pool.query(`
+            SELECT COALESCE(SUM(oi.quantity * oi.price), 0) as revenue
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            JOIN orders o ON oi.order_id = o.id
+            WHERE p.vendor_id = $1 AND o.status != 'cancelled'
+        `, [vendor_id]);
+        const totalRevenue = parseFloat(totalRevenueQuery.rows[0].revenue);
+
+        // Pending orders (distinct pending orders containing vendor's products)
+        const pendingOrdersQuery = await pool.query(`
+            SELECT COUNT(DISTINCT o.id) as pending
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE p.vendor_id = $1 AND o.status = 'pending'
+        `, [vendor_id]);
+        const pendingOrders = parseInt(pendingOrdersQuery.rows[0].pending);
+
+        res.json({ totalProducts, totalOrders, totalRevenue, pendingOrders });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch vendor status' });
+    }
+}

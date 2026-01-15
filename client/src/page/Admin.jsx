@@ -3,12 +3,11 @@ import PendingVendors from "../Components/PendingVendors";
 import UserManagement from "../Components/UserManagement";
 import AdminDashboard from "../Components/AdminDashboard";
 import { api } from "../utils/api";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../utils/auth";
-import { TriangleAlert } from "lucide-react";
 
 const Admin = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [pendingVendors, setPendingVendors] = useState([]);
   const [users, setUsers] = useState([]);
@@ -113,7 +112,7 @@ const Admin = () => {
             Access Denied
           </h1>
           <p className="text-gray-600">
-            You do not have permission to access this page.
+            You are not admin. You do not have permission to access this page.
           </p>
         </div>
       </div>
