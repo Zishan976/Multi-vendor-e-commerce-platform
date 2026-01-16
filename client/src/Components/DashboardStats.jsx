@@ -7,7 +7,6 @@ const DashboardStats = ({
   totalOrders,
   totalRevenue,
   pendingOrders,
-  success,
   error,
 }) => {
   return (
@@ -24,7 +23,7 @@ const DashboardStats = ({
           <RefreshCcw className={loadingStats ? "animate-spin" : ""} />
         </button>
       </div>
-      {success && <div className="text-green-600 mb-4">{success}</div>}
+
       {error && <div className="text-red-600 mb-4">{error}</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-white p-5 rounded-lg shadow-md text-center">

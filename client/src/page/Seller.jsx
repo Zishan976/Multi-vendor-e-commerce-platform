@@ -7,6 +7,7 @@ import DashboardStats from "../Components/DashboardStats";
 // import { useNavigate } from "react-router-dom";
 import { isVendor } from "../utils/auth";
 import { api } from "../utils/api";
+import toast, { Toaster } from "react-hot-toast";
 
 const Seller = () => {
   // const navigate = useNavigate();
@@ -46,6 +47,13 @@ const Seller = () => {
     fetchProducts();
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if (success) {
+      toast.success(success);
+      setSuccess("");
+    }
+  }, [success]);
 
   const fetchOrders = async (page = 1) => {
     try {
@@ -181,7 +189,6 @@ const Seller = () => {
           totalOrders={stats.totalOrders}
           totalRevenue={stats.totalRevenue}
           pendingOrders={stats.pendingOrders}
-          success={success}
           error={error}
         />
       )}
@@ -215,6 +222,7 @@ const Seller = () => {
           errorOrders={errorOrders}
         />
       )}
+      <Toaster />
     </div>
   );
 };

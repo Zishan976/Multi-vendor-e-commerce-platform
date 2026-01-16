@@ -5,6 +5,7 @@ import AdminDashboard from "../Components/AdminDashboard";
 import { api } from "../utils/api";
 // import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../utils/auth";
+import toast, { Toaster } from "react-hot-toast";
 
 const Admin = () => {
   // const navigate = useNavigate();
@@ -23,17 +24,16 @@ const Admin = () => {
   });
 
   useEffect(() => {
-    // Check if user is admin
-    if (!isAdmin()) {
-      return; // Don't fetch data if not admin
+    if (success) {
+      toast.success(success);
+      setSuccess("");
     }
-
-    fetchStats();
-  }, []);
+  }, [success]);
 
   useEffect(() => {
     if (!isAdmin()) return;
 
+    fetchStats();
     if (activeTab === "pending" && pendingVendors.length === 0) {
       fetchPendingVendors();
     } else if (activeTab === "users" && users.length === 0) {
@@ -173,6 +173,7 @@ const Admin = () => {
           setError={setError}
         />
       )}
+      <Toaster />
     </div>
   );
 };
