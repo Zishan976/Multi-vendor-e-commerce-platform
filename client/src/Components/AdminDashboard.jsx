@@ -8,8 +8,7 @@ const AdminDashboard = ({
   totalUsers,
   pendingVendorsCount,
   approvedVendorsCount,
-  success,
-  error,
+  errorDashboard,
 }) => {
   return (
     <div className="max-w-6xl mx-auto px-6 my-10">
@@ -24,7 +23,9 @@ const AdminDashboard = ({
         </button>
       </div>
       {success && <div className="text-green-600 mb-4">{success}</div>}
-      {error && <div className="text-red-600 mb-4">{error}</div>}
+      {errorDashboard && (
+        <div className="text-red-600 mb-4">{errorDashboard}</div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <AdminDashboardCount
           title="Total Users"

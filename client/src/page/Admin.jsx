@@ -15,7 +15,9 @@ const Admin = () => {
   const [loadingVendors, setLoadingVendors] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [errorDashboard, setErrorDashboard] = useState("");
+  const [errorPending, setErrorPending] = useState("");
+  const [errorUsers, setErrorUsers] = useState("");
   const [loadingStats, setLoadingStats] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -43,11 +45,12 @@ const Admin = () => {
 
   const fetchPendingVendors = async () => {
     setLoadingVendors(true);
+    setErrorPending("");
     try {
       const response = await api.get("/admin/vendors/pending");
       setPendingVendors(response.data);
     } catch (error) {
-      setError("Failed to fetch pending vendors.");
+      setErrorPending("Failed to fetch pending vendors.");
     } finally {
       setLoadingVendors(false);
     }
@@ -55,11 +58,12 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
+    setErrorUsers("");
     try {
       const response = await api.get("/admin/users");
       setUsers(response.data);
     } catch (error) {
-      setError("Failed to fetch users.");
+      setErrorUsers("Failed to fetch users.");
     } finally {
       setLoadingUsers(false);
     }
@@ -67,12 +71,13 @@ const Admin = () => {
 
   const fetchStats = async () => {
     setLoadingStats(true);
+    setErrorDashboard("");
     try {
       const response = await api.get("/admin/stats");
       setStats(response.data);
       console.log("Admin stats:", response.data);
     } catch (error) {
-      setError("Failed to fetch admin stats.");
+      setErrorDashboard("Failed to fetch admin stats.");
     } finally {
       setLoadingStats(false);
     }
@@ -150,8 +155,7 @@ const Admin = () => {
           totalUsers={stats.totalUsers}
           pendingVendorsCount={stats.pendingVendorsCount}
           approvedVendorsCount={stats.approvedVendorsCount}
-          success={success}
-          error={error}
+          errorDashboard={errorDashboard}
         />
       )}
       {activeTab === "pending" && (
@@ -160,17 +164,17 @@ const Admin = () => {
           loading={loadingVendors}
           fetchPendingVendors={fetchPendingVendors}
           setSuccess={setSuccess}
-          setError={setError}
+          errorPending={errorPending}
         />
       )}
       {activeTab === "users" && (
         <UserManagement
           users={users}
-          loading={loadingUsers}
           setUsers={setUsers}
+          loading={loadingUsers}
           fetchUsers={fetchUsers}
           setSuccess={setSuccess}
-          setError={setError}
+          errorUsers={errorUsers}
         />
       )}
       <Toaster />

@@ -5,13 +5,19 @@ import { RefreshCcw } from "lucide-react";
 
 const UserManagement = ({
   users,
+  setUsers,
   loading,
   fetchUsers,
   setSuccess,
-  setError,
+  errorUsers,
 }) => {
   const [userSearch, setUserSearch] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
+  const [error, setError] = useState(null);
+
+  React.useEffect(() => {
+    setError(errorUsers);
+  }, [errorUsers]);
 
   const handleRoleChange = (userId, newRole) => {
     setUsers(
@@ -46,6 +52,7 @@ const UserManagement = ({
       <div className="max-w-6xl mx-auto px-6 my-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold mb-6">User Management</h1>
+
           <button
             onClick={fetchUsers}
             disabled={loading}
@@ -54,6 +61,7 @@ const UserManagement = ({
             <RefreshCcw className={loading ? "animate-spin" : ""} />
           </button>
         </div>
+        {error && <div className="text-red-600 mb-4">{error}</div>}
         <input
           type="text"
           placeholder="Search users by username or email..."
@@ -62,6 +70,7 @@ const UserManagement = ({
           className="w-full p-2 border border-gray-300 rounded mb-4"
         />
       </div>
+
       <div className="max-w-6xl mx-auto px-6 mb-20">
         {loading ? (
           <Loading />

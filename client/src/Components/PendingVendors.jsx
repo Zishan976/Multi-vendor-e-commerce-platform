@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Loading from "./Loading";
 import { api } from "../utils/api";
 import { RefreshCcw } from "lucide-react";
@@ -8,10 +8,15 @@ const PendingVendors = ({
   loading,
   fetchPendingVendors,
   setSuccess,
-  setError,
+  errorPending,
 }) => {
   const [vendorSearch, setVendorSearch] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setError(errorPending);
+  }, [errorPending]);
 
   const handleApprove = async (vendorId) => {
     setActionLoading(vendorId);
@@ -58,6 +63,7 @@ const PendingVendors = ({
             <RefreshCcw className={loading ? "animate-spin" : ""} />
           </button>
         </div>
+        {error && <div className="text-red-600 mb-4">{error}</div>}
         <input
           type="text"
           placeholder="Search pending vendors by name or email..."
@@ -66,6 +72,7 @@ const PendingVendors = ({
           className="w-full p-2 border border-gray-300 rounded mb-4"
         />
       </div>
+
       <div className="max-w-6xl mx-auto px-6 mb-20">
         {loading ? (
           <Loading />
