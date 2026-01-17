@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PendingVendors from "../Components/PendingVendors";
 import UserManagement from "../Components/UserManagement";
 import AdminDashboard from "../Components/AdminDashboard";
+import CategoryManagement from "../Components/CategoryManagement";
 import { api } from "../utils/api";
 // import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../utils/auth";
@@ -12,12 +13,15 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [pendingVendors, setPendingVendors] = useState([]);
   const [users, setUsers] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [success, setSuccess] = useState("");
   const [errorDashboard, setErrorDashboard] = useState("");
   const [errorPending, setErrorPending] = useState("");
   const [errorUsers, setErrorUsers] = useState("");
+  const [errorCategories, setErrorCategories] = useState("");
   const [loadingStats, setLoadingStats] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -40,8 +44,23 @@ const Admin = () => {
       fetchPendingVendors();
     } else if (activeTab === "users" && users.length === 0) {
       fetchUsers();
+    } else if (activeTab === "categories" && categories.length === 0) {
+      fetchCategories();
     }
   }, [activeTab]);
+
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    setErrorCategories("");
+    try {
+      const response = await api.get("/categories");
+      setCategories(response.data);
+    } catch (err) {
+      setErrorCategories("Failed to fetch categories.");
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const fetchPendingVendors = async () => {
     setLoadingVendors(true);
@@ -83,7 +102,7 @@ const Admin = () => {
     }
   };
 
-  const activatebuttons = ["dashboard", "pending", "users"];
+  const activatebuttons = ["dashboard", "pending", "users", "categories"];
 
   // If not admin, show access denied message
   if (!isAdmin()) {
@@ -175,6 +194,15 @@ const Admin = () => {
           fetchUsers={fetchUsers}
           setSuccess={setSuccess}
           errorUsers={errorUsers}
+        />
+      )}
+      {activeTab === "categories" && (
+        <CategoryManagement
+          categories={categories}
+          loadingCategories={loadingCategories}
+          fetchCategories={fetchCategories}
+          errorCategories={errorCategories}
+          setSuccess={setSuccess}
         />
       )}
       <Toaster />

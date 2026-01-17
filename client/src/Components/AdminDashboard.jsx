@@ -22,7 +22,6 @@ const AdminDashboard = ({
           <RefreshCcw className={loadingStats ? "animate-spin" : ""} />
         </button>
       </div>
-      {success && <div className="text-green-600 mb-4">{success}</div>}
       {errorDashboard && (
         <div className="text-red-600 mb-4">{errorDashboard}</div>
       )}
