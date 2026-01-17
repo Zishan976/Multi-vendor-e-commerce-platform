@@ -14,6 +14,7 @@ const CategoryManagement = ({
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setError(errorCategories);
@@ -26,6 +27,7 @@ const CategoryManagement = ({
       return;
     }
 
+    setSubmitting(true);
     try {
       if (editingCategory) {
         await api.put(`/categories/${editingCategory.id}`, formData);
@@ -40,6 +42,8 @@ const CategoryManagement = ({
       setEditingCategory(null);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to save category.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -179,9 +183,14 @@ const CategoryManagement = ({
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                    disabled={submitting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {editingCategory ? "Update" : "Add"}
+                    {submitting
+                      ? "Saving..."
+                      : editingCategory
+                        ? "Update"
+                        : "Add"}
                   </button>
                 </div>
               </form>

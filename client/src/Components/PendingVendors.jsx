@@ -11,7 +11,8 @@ const PendingVendors = ({
   errorPending,
 }) => {
   const [vendorSearch, setVendorSearch] = useState("");
-  const [actionLoading, setActionLoading] = useState(null);
+  const [approvingVendorId, setApprovingVendorId] = useState(null);
+  const [rejectingVendorId, setRejectingVendorId] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -19,7 +20,7 @@ const PendingVendors = ({
   }, [errorPending]);
 
   const handleApprove = async (vendorId) => {
-    setActionLoading(vendorId);
+    setApprovingVendorId(vendorId);
     try {
       await api.put(`/admin/vendors/${vendorId}/approve`);
       setSuccess("Vendor approved successfully.");
@@ -27,12 +28,12 @@ const PendingVendors = ({
     } catch (error) {
       setError("Failed to approve vendor.");
     } finally {
-      setActionLoading(null);
+      setApprovingVendorId(null);
     }
   };
 
   const handleReject = async (vendorId) => {
-    setActionLoading(vendorId);
+    setRejectingVendorId(vendorId);
     try {
       await api.put(`/admin/vendors/${vendorId}/reject`);
       setSuccess("Vendor rejected successfully.");
@@ -40,7 +41,7 @@ const PendingVendors = ({
     } catch (error) {
       setError("Failed to reject vendor.");
     } finally {
-      setActionLoading(null);
+      setRejectingVendorId(null);
     }
   };
 
@@ -101,17 +102,21 @@ const PendingVendors = ({
                   <td className="py-2 px-4 border-b">
                     <button
                       onClick={() => handleApprove(vendor.id)}
-                      disabled={actionLoading === vendor.id}
+                      disabled={approvingVendorId === vendor.id}
                       className="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600 disabled:opacity-50"
                     >
-                      {actionLoading === vendor.id ? "Approving..." : "Approve"}
+                      {approvingVendorId === vendor.id
+                        ? "Approving..."
+                        : "Approve"}
                     </button>
                     <button
                       onClick={() => handleReject(vendor.id)}
-                      disabled={actionLoading === vendor.id}
+                      disabled={rejectingVendorId === vendor.id}
                       className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50"
                     >
-                      {actionLoading === vendor.id ? "Rejecting..." : "Reject"}
+                      {rejectingVendorId === vendor.id
+                        ? "Rejecting..."
+                        : "Reject"}
                     </button>
                   </td>
                 </tr>
