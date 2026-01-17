@@ -6,7 +6,7 @@ import CategoryManagement from "../Components/CategoryManagement";
 import { api } from "../utils/api";
 // import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../utils/auth";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const Admin = () => {
   // const navigate = useNavigate();
@@ -205,7 +205,6 @@ const Admin = () => {
           setSuccess={setSuccess}
         />
       )}
-      <Toaster />
     </div>
   );
 };

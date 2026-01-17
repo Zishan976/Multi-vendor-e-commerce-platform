@@ -7,7 +7,7 @@ import DashboardStats from "../Components/DashboardStats";
 // import { useNavigate } from "react-router-dom";
 import { isVendor } from "../utils/auth";
 import { api } from "../utils/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const Seller = () => {
   // const navigate = useNavigate();
@@ -222,7 +222,6 @@ const Seller = () => {
           errorOrders={errorOrders}
         />
       )}
-      <Toaster />
     </div>
   );
 };

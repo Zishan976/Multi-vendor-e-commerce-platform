@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import React, { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const Offer = () => {
   const [visible, setVisible] = useState(true);
@@ -38,7 +38,6 @@ const Offer = () => {
           </div>
         </div>
       )}
-      <Toaster />
     </>
   );
 };
