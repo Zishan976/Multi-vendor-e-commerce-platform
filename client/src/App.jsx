@@ -5,6 +5,7 @@ import Seller from "./page/Seller";
 import Admin from "./page/Admin";
 import AppLayout from "./Components/AppLayout";
 import ErrorPage from "./page/ErrorPage";
+import AuthCallback from "./Components/AuthCallback";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "/admin",
         element: <Admin />,
+      },
+      {
+        path: "/auth/callback",
+        element: <AuthCallback />,
       },
     ],
   },

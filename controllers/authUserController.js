@@ -64,6 +64,6 @@ export const googleAuthCallback = (req, res) => {
 
     const token = jwt.sign({ id: req.user.id, role: req.user.role, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    const base_url = process.env.BASE_URL || 'http://localhost:3000';
+    const base_url = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${base_url}/auth/callback?token=${token}`);
 };

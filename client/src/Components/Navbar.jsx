@@ -50,6 +50,8 @@ const Navbar = () => {
       if (authenticated) {
         const userData = getUserFromToken();
         setUser(userData);
+      } else {
+        localStorage.removeItem("token");
       }
     };
     checkAuth();

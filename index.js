@@ -1,6 +1,9 @@
 import express from 'express'
 import 'dotenv/config'
 import cors from 'cors';
+import helmet from 'helmet'
+import morgan from 'morgan'
+import session from 'express-session'
 import authUserRouter from './routes/authUserRouter.js'
 import vendorRouter from './routes/vendorRouter.js'
 import productRouter from './routes/productRouter.js'
@@ -14,7 +17,13 @@ import { testEmailConnection } from './config/emailConfig.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,7 +33,19 @@ app.use('/uploads', express.static('uploads'));
 // Test email connection on startup (optional)
 testEmailConnection();
 
+// Session configuration for Passport
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // Set to true in production with HTTPS
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
 app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/api/auth', authUserRouter);
 app.use('/api/vendor', vendorRouter);
