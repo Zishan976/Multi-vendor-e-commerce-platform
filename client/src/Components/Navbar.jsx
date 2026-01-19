@@ -20,6 +20,7 @@ const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -66,6 +67,7 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
+    setLogoutLoading(true);
     try {
       const refreshToken = getRefreshToken();
       if (refreshToken) {
@@ -80,6 +82,7 @@ const Navbar = () => {
       clearTokens();
       setUser(null);
       setIsLoggedIn(false);
+      setLogoutLoading(false);
       toast.success("Logged out successfully");
     }
   };
@@ -151,9 +154,14 @@ const Navbar = () => {
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-red-700 transition flex items-center gap-1"
+                  disabled={logoutLoading}
+                  className="bg-red-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  <LogOut className="w-4 h-4" />
+                  {logoutLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
+                  ) : (
+                    <LogOut className="w-4 h-4" />
+                  )}
                   Logout
                 </button>
               </div>
