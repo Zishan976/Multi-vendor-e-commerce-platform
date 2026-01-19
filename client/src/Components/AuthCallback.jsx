@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { storeTokens } from "../utils/auth";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -11,10 +12,11 @@ const AuthCallback = () => {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
-    const token = searchParams.get("token");
+    const accessToken = searchParams.get("accessToken");
+    const refreshToken = searchParams.get("refreshToken");
 
-    if (token) {
-      localStorage.setItem("token", token);
+    if (accessToken && refreshToken) {
+      storeTokens(accessToken, refreshToken);
       toast.success("Google login successful!");
       navigate("/");
     } else {

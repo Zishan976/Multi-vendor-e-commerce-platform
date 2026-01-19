@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { api } from "../utils/api";
-import { useNavigate } from "react-router-dom";
+import { storeTokens } from "../utils/auth";
 
 const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,9 +39,9 @@ const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
           };
 
       const response = await api.post(endpoint, payload);
-      const { token } = response.data;
+      const { accessToken, refreshToken } = response.data;
 
-      localStorage.setItem("token", token);
+      storeTokens(accessToken, refreshToken);
       toast.success(
         isLogin ? "Login successful!" : "Account created successfully!",
       );

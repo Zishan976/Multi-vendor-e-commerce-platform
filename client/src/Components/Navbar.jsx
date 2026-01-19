@@ -4,7 +4,13 @@ import Filter from "./Filter";
 import { api } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
-import { isAuthenticated, getUserFromToken } from "../utils/auth";
+import {
+  isAuthenticated,
+  getUserFromToken,
+  clearTokens,
+  getRefreshToken,
+} from "../utils/auth";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,17 +47,13 @@ const Navbar = () => {
       }
     };
     fetchCategories();
-  }, []);
 
-  useEffect(() => {
     const checkAuth = () => {
       const authenticated = isAuthenticated();
       setIsLoggedIn(authenticated);
       if (authenticated) {
         const userData = getUserFromToken();
         setUser(userData);
-      } else {
-        localStorage.removeItem("token");
       }
     };
     checkAuth();
@@ -63,10 +65,23 @@ const Navbar = () => {
     setIsLoggedIn(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    try {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        // Call backend logout to revoke refresh token
+        await api.post("/auth/logout", { refreshToken });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Continue with local logout even if backend call fails
+    } finally {
+      // Always clear tokens locally
+      clearTokens();
+      setUser(null);
+      setIsLoggedIn(false);
+      toast.success("Logged out successfully");
+    }
   };
 
   return (

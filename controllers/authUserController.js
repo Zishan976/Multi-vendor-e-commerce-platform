@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { pool } from '../config/db.js';
 
 
@@ -16,9 +17,10 @@ export const login = async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password" })
         };
 
-        const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const refreshToken = await generateRefreshToken(user.id);
 
-        res.json({ token });
+        res.json({ accessToken, refreshToken });
     } catch (error) {
         res.status(500).json({ error: "Login failed" })
     }
@@ -39,9 +41,10 @@ export const signup = async (req, res) => {
 
         const newUser = await pool.query('INSERT INTO users (username, email, password) VALUES ($1 ,$2, $3) RETURNING *', [username, email, hashPassword])
 
-        const token = jwt.sign({ id: newUser.rows[0].id, role: newUser.rows[0].role, email: newUser.rows[0].email }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        const accessToken = jwt.sign({ id: newUser.rows[0].id, role: newUser.rows[0].role, email: newUser.rows[0].email }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        const refreshToken = await generateRefreshToken(newUser.rows[0].id)
 
-        res.json({ token })
+        res.json({ accessToken, refreshToken })
 
     } catch (error) {
         res.status(500).json({ error: "Signup failed" })
@@ -60,10 +63,92 @@ export const getUser = async (req, res) => {
     }
 };
 
-export const googleAuthCallback = (req, res) => {
+export const googleAuthCallback = async (req, res) => {
+    try {
+        const accessToken = jwt.sign({ id: req.user.id, role: req.user.role, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const refreshToken = await generateRefreshToken(req.user.id);
 
-    const token = jwt.sign({ id: req.user.id, role: req.user.role, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const base_url = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${base_url}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+    } catch (error) {
+        console.error('Google auth callback error:', error);
+        res.status(500).json({ error: "Google authentication failed" });
+    }
+};
 
-    const base_url = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${base_url}/auth/callback?token=${token}`);
+// Generate refresh token
+const generateRefreshToken = async (userId) => {
+    const refreshToken = crypto.randomBytes(64).toString('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    await pool.query(
+        'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+        [userId, refreshToken, expiresAt]
+    );
+
+    return refreshToken;
+};
+
+// Refresh access token
+export const refreshToken = async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        return res.status(400).json({ error: 'Refresh token required' });
+    }
+
+    try {
+        // Verify refresh token exists and is valid
+        const tokenResult = await pool.query(
+            'SELECT * FROM refresh_tokens WHERE token = $1 AND is_revoked = FALSE AND expires_at > NOW()',
+            [refreshToken]
+        );
+
+        if (tokenResult.rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid or expired refresh token' });
+        }
+
+        const userId = tokenResult.rows[0].user_id;
+
+        // Get user details
+        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = userResult.rows[0];
+
+        // Generate new access token
+        const accessToken = jwt.sign(
+            { id: user.id, role: user.role, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ accessToken });
+    } catch (error) {
+        console.error('Refresh token error:', error);
+        res.status(500).json({ error: 'Token refresh failed' });
+    }
+};
+
+// Logout - revoke refresh token
+export const logout = async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        return res.status(400).json({ error: 'Refresh token required' });
+    }
+
+    try {
+        await pool.query(
+            'UPDATE refresh_tokens SET is_revoked = TRUE WHERE token = $1',
+            [refreshToken]
+        );
+
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({ error: 'Logout failed' });
+    }
 };

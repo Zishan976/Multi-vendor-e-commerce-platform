@@ -1,7 +1,28 @@
 import { jwtDecode } from "jwt-decode";
+import { api } from "./api";
+
+export const storeTokens = (accessToken, refreshToken) => {
+  localStorage.setItem("accessToken", accessToken);
+  if (refreshToken) {
+    localStorage.setItem("refreshToken", refreshToken);
+  }
+};
+
+export const clearTokens = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+};
+
+export const getAccessToken = () => {
+  return localStorage.getItem("accessToken");
+};
+
+export const getRefreshToken = () => {
+  return localStorage.getItem("refreshToken");
+};
 
 export const getUserFromToken = () => {
-  const token = localStorage.getItem("token");
+  const token = getAccessToken();
   if (!token) return null;
 
   try {
@@ -24,7 +45,7 @@ export const isVendor = () => {
 };
 
 export const isAuthenticated = () => {
-  const token = localStorage.getItem("token");
+  const token = getAccessToken();
   if (!token) return false;
 
   try {
@@ -33,5 +54,25 @@ export const isAuthenticated = () => {
     return decoded.exp > currentTime;
   } catch (error) {
     return false;
+  }
+};
+
+export const refreshAccessToken = async () => {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    throw new Error("No refresh token available");
+  }
+
+  try {
+    // Use api.post instead of fetch - cleaner and consistent
+    const response = await api.post("/auth/refresh", { refreshToken });
+    const data = response.data;
+
+    storeTokens(data.accessToken, null); // Don't overwrite refresh token
+    return data.accessToken;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    clearTokens();
+    throw error;
   }
 };
