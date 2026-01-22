@@ -64,7 +64,7 @@ export const refreshAccessToken = async () => {
   }
 
   try {
-    // Use api.post instead of fetch - cleaner and consistent
+    // The refresh endpoint doesn't require authentication, so api.post is fine
     const response = await api.post("/auth/refresh", { refreshToken });
     const data = response.data;
 

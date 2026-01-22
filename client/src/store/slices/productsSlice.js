@@ -10,6 +10,7 @@ export const fetchProducts = createAsyncThunk(
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (categoryId) url += `&category_id=${categoryId}`;
             const response = await api.get(url);
+            console.log('Fetched products:', response.data);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || 'Failed to fetch products');

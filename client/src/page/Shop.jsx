@@ -9,7 +9,7 @@ import Pagination from "../Components/Pagination";
 const Shop = () => {
   const dispatch = useDispatch();
   const { products, pagination, loading, error } = useSelector(
-    (state) => state.products
+    (state) => state.products,
   );
   const [searchParams] = useSearchParams();
 

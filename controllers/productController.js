@@ -313,22 +313,66 @@ export const updateVendorProducts = async (req, res) => {
         }
         const vendorId = vendorResult.rows[0].id;
 
-        let image_url = null;
+        // Build dynamic update query based on provided fields
+        const updateFields = [];
+        const params = [];
+        let paramIndex = 1;
+
+        // Always include required fields
+        updateFields.push(`name = $${paramIndex}`);
+        params.push(name);
+        paramIndex++;
+
+        updateFields.push(`description = $${paramIndex}`);
+        params.push(description);
+        paramIndex++;
+
+        updateFields.push(`price = $${paramIndex}`);
+        params.push(price);
+        paramIndex++;
+
+        updateFields.push(`stock_quantity = $${paramIndex}`);
+        params.push(stock_quantity);
+        paramIndex++;
+
+        updateFields.push(`category_id = $${paramIndex}`);
+        params.push(category_id);
+        paramIndex++;
+
+        if (status) {
+            updateFields.push(`status = $${paramIndex}`);
+            params.push(status);
+            paramIndex++;
+        }
+
+        // Handle image upload only if a new file is provided
         if (req.file) {
             const localFilePath = path.join(__dirname, '../uploads/products', req.file.filename);
             try {
                 // Upload to Cloudinary
-                image_url = await uploadToCloudinary(localFilePath);
+                const image_url = await uploadToCloudinary(localFilePath);
                 // Delete local file after successful upload
                 deleteLocalFile(localFilePath);
+
+                updateFields.push(`image_url = $${paramIndex}`);
+                params.push(image_url);
+                paramIndex++;
             } catch (uploadError) {
                 console.error('Cloudinary upload failed:', uploadError);
                 // Still save the product but with local URL as fallback
-                image_url = `/uploads/products/${req.file.filename}`;
+                const image_url = `/uploads/products/${req.file.filename}`;
+                updateFields.push(`image_url = $${paramIndex}`);
+                params.push(image_url);
+                paramIndex++;
             }
         }
 
-        const updateProduct = await pool.query('UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, image_url = $5, category_id = $6, status = $7 WHERE id = $8 AND vendor_id = $9 RETURNING *', [name, description, price, stock_quantity, image_url, category_id, status, productId, vendorId]);
+        // Add WHERE conditions
+        params.push(productId, vendorId);
+
+        const query = `UPDATE products SET ${updateFields.join(', ')} WHERE id = $${paramIndex} AND vendor_id = $${paramIndex + 1} RETURNING *`;
+
+        const updateProduct = await pool.query(query, params);
 
         if (!updateProduct.rows.length) { return res.status(404).json({ error: 'Product not found' }) }
 
