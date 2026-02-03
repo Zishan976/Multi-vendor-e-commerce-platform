@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import Loading from "./Loading";
-import { RefreshCcw } from "lucide-react";
+import {
+  RefreshCcw,
+  X,
+  Package,
+  FileText,
+  DollarSign,
+  Hash,
+  Tag,
+  Image,
+  CheckCircle,
+} from "lucide-react";
 
 // Utility function for robust text truncation
 const truncateText = (text, maxWords = 23) => {
@@ -59,7 +69,7 @@ const ProductsSection = ({
   return (
     <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-blue-600 pb-2">
+        <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-green-600 pb-2">
           My Products
         </h2>
         <button
@@ -82,28 +92,41 @@ const ProductsSection = ({
           placeholder="Search products..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1 p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          className="flex-1 p-3 border border-gray-300 rounded focus:outline-none focus:border-green-500"
         />
         <button
           onClick={() => {
             setShowForm(true);
             setEditingProduct(null);
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
         >
           Add New Product
         </button>
       </div>
 
       {showForm && (
-        <AddProductForm
-          editingProduct={editingProduct}
-          onClose={() => {
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out"
+          onClick={() => {
             setShowForm(false);
             setEditingProduct(null);
           }}
-          onSuccess={fetchProducts}
-        />
+        >
+          <div
+            className="bg-white rounded-lg p-10 shadow-xl w-[80%] max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AddProductForm
+              editingProduct={editingProduct}
+              onClose={() => {
+                setShowForm(false);
+                setEditingProduct(null);
+              }}
+              onSuccess={fetchProducts}
+            />
+          </div>
+        </div>
       )}
 
       {loadingProducts ? (
@@ -260,112 +283,194 @@ const AddProductForm = ({ editingProduct, onClose, onSuccess }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white p-4 rounded-lg shadow-md mb-5"
-    >
-      <h3 className="text-lg font-semibold mb-4">
-        {editingProduct ? "Edit Product" : "Add New Product"}
-      </h3>
-      {submitError && (
-        <div className="bg-red-100 text-red-700 p-3 rounded mb-4 border border-red-300">
-          {submitError}
+    <div>
+      <div className="flex justify-between items-center mb-6 border-b border-gray-200 bg-linear-to-r from-green-50 to-blue-50 -m-10 px-10 pt-6 pb-4 rounded-t-lg">
+        <div className="flex items-center">
+          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3">
+            <Package className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-800">
+              {editingProduct ? "Edit Product" : "Add New Product"}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {editingProduct
+                ? "Update product information"
+                : "Create a new product listing"}
+            </p>
+          </div>
         </div>
-      )}
-      <div className="space-y-4">
-        <input
-          type="text"
-          placeholder="Product Name"
-          value={formData.name}
-          required
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-        />
-        <textarea
-          placeholder="Description"
-          value={formData.description}
-          required
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          className="w-full p-3 border border-gray-300 rounded resize-vertical min-h-24 focus:outline-none focus:border-blue-500"
-        />
-        <input
-          type="number"
-          placeholder="Price"
-          value={formData.price}
-          step="0.01"
-          required
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-        />
-        <input
-          type="number"
-          placeholder="Stock Quantity"
-          value={formData.stock_quantity}
-          required
-          onChange={(e) =>
-            setFormData({ ...formData, stock_quantity: e.target.value })
-          }
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-        />
-        <select
-          value={formData.category_id}
-          required
-          onChange={(e) =>
-            setFormData({ ...formData, category_id: e.target.value })
-          }
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-          disabled={loadingCategories}
+        <button
+          onClick={onClose}
+          className="w-8 h-8 bg-gray-200 hover:bg-red-100 hover:text-red-600 rounded-full flex items-center justify-center transition-all duration-200"
         >
-          <option value="">
-            {loadingCategories ? "Loading categories..." : "Select Category"}
-          </option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-        >
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="out_of_stock">Out of Stock</option>
-        </select>
-        <input
-          type="file"
-          accept="image/*"
-          required={!editingProduct}
-          onChange={(e) =>
-            setFormData({ ...formData, image: e.target.files[0] })
-          }
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-        />
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {submitting
-              ? "Submitting..."
-              : editingProduct
-                ? "Update Product"
-                : "Add Product"}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
+          <X size={18} />
+        </button>
       </div>
-    </form>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {submitError && (
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-4 border border-red-300">
+            {submitError}
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <Package className="w-4 h-4 mr-2 text-green-600" />
+              Product Name
+            </label>
+            <input
+              type="text"
+              placeholder="Enter product name"
+              value={formData.name}
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <FileText className="w-4 h-4 mr-2 text-green-600" />
+              Description
+            </label>
+            <textarea
+              placeholder="Enter detailed product description"
+              value={formData.description}
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl resize-vertical min-h-32 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <DollarSign className="w-4 h-4 mr-2 text-green-600" />
+              Price
+            </label>
+            <input
+              type="number"
+              placeholder="0.00"
+              value={formData.price}
+              step="0.01"
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <Hash className="w-4 h-4 mr-2 text-green-600" />
+              Stock Quantity
+            </label>
+            <input
+              type="number"
+              placeholder="0"
+              value={formData.stock_quantity}
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, stock_quantity: e.target.value })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <Tag className="w-4 h-4 mr-2 text-green-600" />
+              Category
+            </label>
+            <select
+              value={formData.category_id}
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, category_id: e.target.value })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+              disabled={loadingCategories}
+            >
+              <option value="">
+                {loadingCategories
+                  ? "Loading categories..."
+                  : "Select Category"}
+              </option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+              Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="out_of_stock">Out of Stock</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+              <Image className="w-4 h-4 mr-2 text-green-600" />
+              Product Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              required={!editingProduct}
+              onChange={(e) =>
+                setFormData({ ...formData, image: e.target.files[0] })
+              }
+              className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 file:cursor-pointer"
+            />
+          </div>
+          <div className="md:col-span-2 flex gap-4 pt-6 border-t border-gray-200 mt-8">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 px-8 py-4 bg-linear-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-102 hover:shadow-lg flex items-center justify-center"
+            >
+              {submitting ? (
+                <>
+                  <RefreshCcw className="w-5 h-5 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  {editingProduct ? "Update Product" : "Add Product"}
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-8 py-4 bg-linear-to-r from-gray-200 to-gray-300 text-gray-800 rounded-xl font-semibold hover:from-gray-300 hover:to-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center"
+            >
+              <X className="w-5 h-5 mr-2" />
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   );
 };
