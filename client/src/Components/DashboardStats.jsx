@@ -12,15 +12,17 @@ const DashboardStats = ({
   return (
     <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-blue-600 pb-2">
+        <h2 className="text-sm md:text-2xl font-bold text-gray-800 border-b-2 border-green-600 pb-2">
           Dashboard Overview
         </h2>
         <button
           onClick={fetchStats}
           disabled={loadingStats}
-          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-2 py-1 md:px-4 md:py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCcw className={loadingStats ? "animate-spin" : ""} />
+          <RefreshCcw
+            className={`w-4 h-4 md:w-6 md:h-6 ${loadingStats ? "animate-spin" : ""}`}
+          />
         </button>
       </div>
 

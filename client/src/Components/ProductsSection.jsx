@@ -69,15 +69,17 @@ const ProductsSection = ({
   return (
     <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-green-600 pb-2">
+        <h2 className="text-lg md:text-2xl font-bold text-gray-800 border-b-2 border-green-600 pb-2">
           My Products
         </h2>
         <button
           onClick={fetchProducts}
           disabled={loadingProducts}
-          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="md:px-4 md:py-2 px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCcw className={loadingProducts ? "animate-spin" : ""} />
+          <RefreshCcw
+            className={`w-4 h-4 md:w-6 md:h-6 ${loadingProducts ? "animate-spin" : ""}`}
+          />
         </button>
       </div>
       {error && (
@@ -86,7 +88,7 @@ const ProductsSection = ({
         </div>
       )}
 
-      <div className="flex gap-4 mb-5 items-center">
+      <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
         <input
           type="text"
           placeholder="Search products..."
@@ -114,7 +116,7 @@ const ProductsSection = ({
           }}
         >
           <div
-            className="bg-white rounded-lg p-10 shadow-xl w-[80%] max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out"
+            className="bg-white rounded-lg p-10 shadow-xl md:w-[80%] w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out"
             onClick={(e) => e.stopPropagation()}
           >
             <AddProductForm
@@ -442,7 +444,7 @@ const AddProductForm = ({ editingProduct, onClose, onSuccess }) => {
               className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 file:cursor-pointer"
             />
           </div>
-          <div className="md:col-span-2 flex gap-4 pt-6 border-t border-gray-200 mt-8">
+          <div className="flex-col md:flex-row flex gap-4 pt-6 border-t border-gray-200 mt-8">
             <button
               type="submit"
               disabled={submitting}

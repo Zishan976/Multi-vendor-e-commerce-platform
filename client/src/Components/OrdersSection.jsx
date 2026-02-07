@@ -34,7 +34,7 @@ const OrdersSection = ({
 
   return (
     <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-blue-600 pb-2">
+      <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-green-600 pb-2">
         My Orders
       </h2>
       {error ? (

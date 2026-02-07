@@ -164,15 +164,16 @@ const Seller = () => {
       </h1>
 
       {/* Tab Navigation */}
-      <div className="flex justify-center mb-8 border-b-2 border-gray-200">
+      <div className="flex justify-start mb-8 border-b-2 border-gray-200 overflow-x-auto">
         {activatebuttons.map((tab) => (
           <button
             key={tab}
-            className={`px-6 py-3 text-lg font-medium  border-b-3  transition-all duration-300  ${
-              activeTab === tab
-                ? "text-green-600 border-green-600"
-                : "text-gray-600 border-transparent hover:text-green-600"
-            }`}
+            className={`px-6 py-3 text-lg font-medium transition-all duration-300
+        ${
+          activeTab === tab
+            ? "text-green-600 border-b-4 border-green-600"
+            : "text-gray-600 border-b-2 border-transparent hover:text-green-600"
+        }`}
             onClick={() => setActiveTab(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}

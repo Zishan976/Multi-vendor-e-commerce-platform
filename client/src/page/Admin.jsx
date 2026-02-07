@@ -150,11 +150,11 @@ const Admin = () => {
       </h1>
 
       {/* Tab Navigation */}
-      <div className="flex justify-center mb-8 border-b-2 border-gray-200">
+      <div className="flex justify-start mb-8 border-b-2 border-gray-200 overflow-x-auto">
         {activatebuttons.map((tab) => (
           <button
             key={tab}
-            className={`px-6 py-3 text-lg font-medium  border-b-3  transition-all duration-300  ${
+            className={`px-6 py-3 text-lg font-medium border-b-2 transition-all duration-300 ${
               activeTab === tab
                 ? "text-green-600 border-green-600"
                 : "text-gray-600 border-transparent hover:text-green-600"

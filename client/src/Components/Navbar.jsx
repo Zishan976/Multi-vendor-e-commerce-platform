@@ -89,10 +89,13 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow-md text-slate-600 px-4 py-3">
+      <nav className="bg-white shadow-md text-slate-600 px-4 py-3 border-b border-gray-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="text-4xl font-semibold text-green-600">
+          <Link
+            to="/"
+            className="text-2xl md:text-4xl font-semibold text-green-600"
+          >
             Swift<span className="text-blue-900">Cart</span>
             <span className="text-4xl leading-none">.</span>
           </Link>
@@ -113,7 +116,7 @@ const Navbar = () => {
             </li>
           </ul>
 
-          <div className="flex gap-1">
+          {/* <div className="flex gap-1">
             <input
               type="text"
               placeholder="Search products"
@@ -137,7 +140,7 @@ const Navbar = () => {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* Cart + Auth (Always Visible) */}
           <div className="flex items-center gap-4">
@@ -148,8 +151,8 @@ const Navbar = () => {
               </span>
             </div>
             {isLoggedIn ? (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-700 text-sm md:text-base">
+              <div className="hidden lg:flex items-center gap-2">
+                <span className=" text-gray-700 text-sm md:text-base">
                   Welcome, {user?.email}
                 </span>
                 <button
@@ -168,7 +171,7 @@ const Navbar = () => {
             ) : (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-green-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-green-700 transition"
+                className="hidden md:inline bg-green-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-green-700 transition"
               >
                 Login
               </button>
@@ -188,13 +191,56 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden mt-3 space-y-3 px-2">
             <ul className="space-y-2 text-gray-700 font-medium">
-              <li className="hover:text-green-600 cursor-pointer">Home</li>
-              <li className="hover:text-green-600 cursor-pointer">Shop</li>
-              <li className="border-b-2 border-green-500 cursor-pointer">
-                Seller
+              <li className="hover:text-green-600 cursor-pointer">
+                <Link to="/" onClick={() => setIsOpen(false)}>
+                  Home
+                </Link>
+              </li>
+              <li className="hover:text-green-600 cursor-pointer">
+                <Link to="/shop" onClick={() => setIsOpen(false)}>
+                  Shop
+                </Link>
               </li>
               <li className="border-b-2 border-green-500 cursor-pointer">
-                Admin
+                <Link to="/seller" onClick={() => setIsOpen(false)}>
+                  Seller
+                </Link>
+              </li>
+              <li className="border-b-2 border-green-500 cursor-pointer">
+                <Link to="/admin" onClick={() => setIsOpen(false)}>
+                  Admin
+                </Link>
+              </li>
+              <li>
+                {isLoggedIn ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleLogout();
+                      }}
+                      disabled={logoutLoading}
+                      className="bg-red-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                      {logoutLoading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
+                      ) : (
+                        <LogOut className="w-4 h-4" />
+                      )}
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsModalOpen(true);
+                    }}
+                    className="bg-green-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-green-700 transition"
+                  >
+                    Login
+                  </button>
+                )}
               </li>
             </ul>
           </div>

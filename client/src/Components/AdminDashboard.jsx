@@ -13,13 +13,15 @@ const AdminDashboard = ({
   return (
     <div className="max-w-6xl mx-auto px-6 my-10">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+        <h1 className="text-lg md:text-3xl font-bold">Admin Dashboard</h1>
         <button
           onClick={fetchStats}
           disabled={loadingStats}
-          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-2 py-1 md:px-4 md:py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCcw className={loadingStats ? "animate-spin" : ""} />
+          <RefreshCcw
+            className={`w-4 h-4 md:w-6 md:h-6 ${loadingStats ? "animate-spin" : ""}`}
+          />
         </button>
       </div>
       {errorDashboard && (
