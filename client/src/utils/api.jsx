@@ -29,6 +29,7 @@ api.interceptors.response.use(
       try {
         await refreshAccessToken();
         const newToken = getAccessToken();
+        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       } catch (refreshError) {

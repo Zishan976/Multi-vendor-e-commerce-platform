@@ -14,6 +14,10 @@ export const authenticateAdmin = (req, res, next) => {
             return res.status(403).json({ error: "Access denied. Admin role required" });
         }
     } catch (error) {
-        res.status(403).json({ error: "Invalid token" });
+        if (error.name === 'TokenExpiredError') {
+            res.status(401).json({ error: "Token expired" });
+        } else {
+            res.status(403).json({ error: "Invalid token" });
+        }
     }
 };
