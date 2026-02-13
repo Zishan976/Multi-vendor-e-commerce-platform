@@ -6,6 +6,8 @@ import Admin from "./page/Admin";
 import AppLayout from "./Components/AppLayout";
 import ErrorPage from "./page/ErrorPage";
 import AuthCallback from "./Components/AuthCallback";
+import ProductDetail from "./page/ProductDetail";
+import StoreDetail from "./page/StoreDetail";
 
 const router = createBrowserRouter([
   {
@@ -22,8 +24,16 @@ const router = createBrowserRouter([
         element: <Shop />,
       },
       {
+        path: "/product/:id",
+        element: <ProductDetail />,
+      },
+      {
         path: "/seller",
         element: <Seller />,
+      },
+      {
+        path: "/store/:vendorId",
+        element: <StoreDetail />,
       },
       {
         path: "/admin",

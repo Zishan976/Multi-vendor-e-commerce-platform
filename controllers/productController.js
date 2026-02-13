@@ -12,7 +12,7 @@ export const getAllProducts = async (req, res) => {
         const offset = (page - 1) * limit;
 
         let query = `
-            SELECT p.*, c.name as category_name, v.business_name as vendor_name
+            SELECT p.*, c.name as category_name, v.business_name as vendor_name, v.id as vendor_id
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
             LEFT JOIN vendors v ON p.vendor_id = v.id
@@ -81,7 +81,7 @@ export const getLatestProducts = async (req, res) => {
     try {
         const { limit = 4 } = req.query;
 
-        const productsResult = await pool.query(`SELECT p.*, c.name as category_name, v.business_name as vendor_name
+        const productsResult = await pool.query(`SELECT p.*, c.name as category_name, v.business_name as vendor_name, v.id as vendor_id
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN vendors v ON p.vendor_id = v.id
@@ -102,7 +102,7 @@ export const getBestProducts = async (req, res) => {
 
         // For now, I'll use products with highest stock as a proxy for "best"
         const productsResult = await pool.query(`
-        SELECT p.*, c.name as category_name, v.business_name as vendor_name
+        SELECT p.*, c.name as category_name, v.business_name as vendor_name, v.id as vendor_id
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN vendors v ON p.vendor_id = v.id
@@ -123,7 +123,7 @@ export const getProductById = async (req, res) => {
         const { id } = req.params;
 
         const productResult = await pool.query(`
-            SELECT p.*, c.name as category_name, v.business_name as vendor_name
+            SELECT p.*, c.name as category_name, v.business_name as vendor_name, v.id as vendor_id
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
             LEFT JOIN vendors v ON p.vendor_id = v.id
@@ -189,6 +189,57 @@ export const getProductsByCategory = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch products by category' });
+    }
+};
+
+export const getProductsByVendor = async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        const [productsResult, countResult] = await Promise.all([
+            pool.query(`
+                SELECT p.*, c.name as category_name, v.business_name as vendor_name
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN vendors v ON p.vendor_id = v.id
+                WHERE p.vendor_id = $1 AND p.status = 'active'
+                ORDER BY p.created_at DESC
+                LIMIT $2 OFFSET $3
+            `, [vendorId, limit, offset]),
+            pool.query('SELECT COUNT(*) FROM products WHERE vendor_id = $1 AND status = $2', [vendorId, 'active'])
+        ]);
+
+        const totalProducts = parseInt(countResult.rows[0].count);
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        if (!productsResult.rows.length) {
+            return res.json({
+                products: [],
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages: 0,
+                    totalProducts: 0,
+                    hasNext: false,
+                    hasPrev: false
+                }
+            })
+        }
+
+        res.json({
+            products: productsResult.rows,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                totalProducts,
+                hasNext: page < totalPages,
+                hasPrev: page > 1
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch products by vendor' });
     }
 };
 

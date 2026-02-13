@@ -12,3 +12,9 @@
 button {
   @apply cursor-pointer;
 }
+
+* {
+  font-family:
+    Outfit,
+    Outfit Fallback;
+}

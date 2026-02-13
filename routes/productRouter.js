@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateVendor } from '../middleware/authVendorMiddleware.js';
-import { addVendorProducts, deleteVendorProducts, getAllProducts, getProductsByCategory, getProductById, getVendorProduct, getVendorProducts, updateVendorProducts, getLatestProducts, getBestProducts } from '../controllers/productController.js';
+import { addVendorProducts, deleteVendorProducts, getAllProducts, getProductsByCategory, getProductById, getVendorProduct, getVendorProducts, updateVendorProducts, getLatestProducts, getBestProducts, getProductsByVendor } from '../controllers/productController.js';
 import { uploadProductImage } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
@@ -11,6 +11,7 @@ router.get('/public/latest', getLatestProducts)
 router.get('/public/best', getBestProducts)
 router.get('/public/:id', getProductById);
 router.get('/public/categories/:categoryId', getProductsByCategory);
+router.get('/public/vendor/:vendorId', getProductsByVendor);
 
 // Vendor authentication required for all routes below
 router.use(authenticateVendor);

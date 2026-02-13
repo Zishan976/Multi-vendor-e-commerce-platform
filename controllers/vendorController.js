@@ -144,3 +144,17 @@ export const getVenderStatus = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch vendor status' });
     }
 }
+
+export const getVendorProfileById = async (req, res) => {
+    const { vendorId } = req.params;
+    try {
+        const fetchProfile = await pool.query('SELECT id, business_name, business_description FROM vendors WHERE id = $1 AND status = $2', [vendorId, 'approved']);
+
+        if (!fetchProfile.rows.length) { return res.status(404).json({ error: 'Vendor not found' }) }
+
+        res.json(fetchProfile.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch vendor profile' });
+    }
+}
