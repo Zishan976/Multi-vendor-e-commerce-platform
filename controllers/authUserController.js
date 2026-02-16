@@ -3,6 +3,20 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { pool } from '../config/db.js';
 
+// Temporary token storage for secure OAuth callback
+// Stores tokens with a temporary ID, client exchanges ID for tokens
+const temporaryTokenStore = new Map();
+
+// Clean up expired temporary tokens every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [tempId, data] of temporaryTokenStore.entries()) {
+        if (now > data.expiresAt) {
+            temporaryTokenStore.delete(tempId);
+        }
+    }
+}, 5 * 60 * 1000);
+
 
 export const login = async (req, res) => {
     const { email, password } = req.body;
@@ -63,13 +77,47 @@ export const getUser = async (req, res) => {
     }
 };
 
+// Exchange temporary token ID for actual tokens (more secure than passing tokens in URL)
+export const exchangeTempToken = async (req, res) => {
+    const { tempTokenId } = req.body;
+
+    if (!tempTokenId) {
+        return res.status(400).json({ error: 'Temporary token ID required' });
+    }
+
+    const tokenData = temporaryTokenStore.get(tempTokenId);
+
+    if (!tokenData) {
+        return res.status(401).json({ error: 'Invalid or expired temporary token' });
+    }
+
+    // Delete the temporary token immediately after use (one-time use)
+    temporaryTokenStore.delete(tempTokenId);
+
+    res.json({
+        accessToken: tokenData.accessToken,
+        refreshToken: tokenData.refreshToken
+    });
+};
+
 export const googleAuthCallback = async (req, res) => {
     try {
         const accessToken = jwt.sign({ id: req.user.id, role: req.user.role, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const refreshToken = await generateRefreshToken(req.user.id);
 
+        // Generate a temporary token ID instead of passing tokens in URL
+        const tempTokenId = crypto.randomBytes(32).toString('hex');
+
+        // Store tokens temporarily (expires in 5 minutes)
+        temporaryTokenStore.set(tempTokenId, {
+            accessToken,
+            refreshToken,
+            expiresAt: Date.now() + 5 * 60 * 1000
+        });
+
         const base_url = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${base_url}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+        // Redirect with temporary token ID instead of actual tokens
+        res.redirect(`${base_url}/auth/callback?tempTokenId=${tempTokenId}`);
     } catch (error) {
         console.error('Google auth callback error:', error);
         res.status(500).json({ error: "Google authentication failed" });

@@ -2,8 +2,10 @@ import { ArrowRight } from "lucide-react";
 import hero1 from "../assets/hero1.png";
 import hero2 from "../assets/hero2.png";
 import hero3 from "../assets/hero3.png";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
   return (
     <div className="mx-6">
       <div className="flex max-xl:flex-col gap-8 max-w-7xl mx-auto my-10">
@@ -23,7 +25,10 @@ const Hero = () => {
               <p>Starts from</p>
               <p className="text-3xl">$4.90</p>
             </div>
-            <button className="bg-slate-800 text-white text-sm py-2.5 px-7 sm:py-5 sm:px-12 mt-4 sm:mt-10 rounded-md hover:bg-slate-900 hover:scale-103 active:scale-95 transition">
+            <button
+              onClick={() => navigate("/shop")}
+              className="bg-slate-800 text-white text-sm py-2.5 px-7 sm:py-5 sm:px-12 mt-4 sm:mt-10 rounded-md hover:bg-slate-900 hover:scale-103 active:scale-95 transition"
+            >
               LEARN MORE
             </button>
           </div>
@@ -45,7 +50,10 @@ const Hero = () => {
               <p className="text-3xl font-medium bg-linear-to-r from-slate-800 to-[#FFAD51] bg-clip-text text-transparent max-w-40">
                 Best products
               </p>
-              <button className="flex items-center gap-1 mt-4">
+              <button
+                onClick={() => navigate("/shop")}
+                className="flex items-center gap-1 mt-4"
+              >
                 View more
                 <ArrowRight className="group-hover:ml-2 transition-all" />
               </button>
@@ -67,7 +75,10 @@ const Hero = () => {
               <p className="text-3xl font-medium bg-linear-to-r from-slate-800 to-[#78B2FF] bg-clip-text text-transparent max-w-40">
                 20% discounts
               </p>
-              <button className="flex items-center gap-1 mt-4">
+              <button
+                onClick={() => navigate("/shop")}
+                className="flex items-center gap-1 mt-4"
+              >
                 View more
                 <ArrowRight className="group-hover:ml-2 transition-all" />
               </button>

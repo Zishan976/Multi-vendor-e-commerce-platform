@@ -1,5 +1,5 @@
 import express from 'express'
-import { getUser, login, signup, googleAuthCallback, refreshToken, logout } from '../controllers/authUserController.js';
+import { getUser, login, signup, googleAuthCallback, refreshToken, logout, exchangeTempToken } from '../controllers/authUserController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import passport from '../middleware/passportMiddleware.js';
 
@@ -9,6 +9,7 @@ router.post('/login', login);
 router.post('/signup', signup);
 router.post('/refresh', refreshToken);
 router.post('/logout', logout);
+router.post('/exchange-temp-token', exchangeTempToken);
 router.get('/user', authenticateUser, getUser);
 
 

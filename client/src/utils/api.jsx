@@ -2,10 +2,7 @@ import axios from "axios";
 import { getAccessToken, refreshAccessToken, clearTokens } from "./auth";
 
 export const api = axios.create({
-  //   baseURL: import.meta.env.PROD
-  //     ? "https://habitto.onrender.com/api"
-  //     : "http://localhost:3000/api",
-  baseURL: "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api",
 });
 
 // Add request interceptor to dynamically set the token
