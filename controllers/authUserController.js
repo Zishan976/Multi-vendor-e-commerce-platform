@@ -46,6 +46,12 @@ export const signup = async (req, res) => {
     try {
         if (!username || !email || !password) { return res.status(400).json({ error: "username, email and password needed" }) }
 
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+
         const existInUser = await pool.query('SELECT * FROM users WHERE email = $1', [email])
         if (existInUser.rows.length > 0) { return res.status(400).json({ error: "This email already exist" }) }
 
@@ -139,9 +145,9 @@ const generateRefreshToken = async (userId) => {
 
 // Refresh access token
 export const refreshToken = async (req, res) => {
-    const { refreshToken } = req.body;
+    const { refreshToken: oldRefreshToken } = req.body;
 
-    if (!refreshToken) {
+    if (!oldRefreshToken) {
         return res.status(400).json({ error: 'Refresh token required' });
     }
 
@@ -149,7 +155,7 @@ export const refreshToken = async (req, res) => {
         // Verify refresh token exists and is valid
         const tokenResult = await pool.query(
             'SELECT * FROM refresh_tokens WHERE token = $1 AND is_revoked = FALSE AND expires_at > NOW()',
-            [refreshToken]
+            [oldRefreshToken]
         );
 
         if (tokenResult.rows.length === 0) {
@@ -166,6 +172,12 @@ export const refreshToken = async (req, res) => {
 
         const user = userResult.rows[0];
 
+        // Revoke the old refresh token
+        await pool.query(
+            'UPDATE refresh_tokens SET is_revoked = TRUE WHERE token = $1',
+            [oldRefreshToken]
+        );
+
         // Generate new access token
         const accessToken = jwt.sign(
             { id: user.id, role: user.role, email: user.email },
@@ -173,7 +185,10 @@ export const refreshToken = async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        res.json({ accessToken });
+        // Generate new refresh token
+        const newRefreshToken = await generateRefreshToken(user.id);
+
+        res.json({ accessToken, refreshToken: newRefreshToken });
     } catch (error) {
         console.error('Refresh token error:', error);
         res.status(500).json({ error: 'Token refresh failed' });

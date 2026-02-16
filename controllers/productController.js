@@ -39,9 +39,12 @@ export const getAllProducts = async (req, res) => {
         query += ` ORDER BY p.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
 
+        // Build count params explicitly - only include filter params, not limit and offset
+        const countParams = params.slice(0, params.length - 2);
+
         const [productsResult, countResult] = await Promise.all([
             pool.query(query, params),
-            pool.query(countQuery, params.slice(0, -2)) // Remove limit and offset for count
+            pool.query(countQuery, countParams)
         ]);
 
         const totalProducts = parseInt(countResult.rows[0].count);
@@ -374,21 +377,28 @@ export const updateVendorProducts = async (req, res) => {
         params.push(name);
         paramIndex++;
 
-        updateFields.push(`description = $${paramIndex}`);
-        params.push(description);
-        paramIndex++;
-
         updateFields.push(`price = $${paramIndex}`);
         params.push(price);
         paramIndex++;
 
-        updateFields.push(`stock_quantity = $${paramIndex}`);
-        params.push(stock_quantity);
-        paramIndex++;
+        // Only include optional fields if they are provided (not undefined)
+        if (description !== undefined) {
+            updateFields.push(`description = $${paramIndex}`);
+            params.push(description);
+            paramIndex++;
+        }
 
-        updateFields.push(`category_id = $${paramIndex}`);
-        params.push(category_id);
-        paramIndex++;
+        if (stock_quantity !== undefined) {
+            updateFields.push(`stock_quantity = $${paramIndex}`);
+            params.push(stock_quantity);
+            paramIndex++;
+        }
+
+        if (category_id !== undefined) {
+            updateFields.push(`category_id = $${paramIndex}`);
+            params.push(category_id);
+            paramIndex++;
+        }
 
         if (status) {
             updateFields.push(`status = $${paramIndex}`);

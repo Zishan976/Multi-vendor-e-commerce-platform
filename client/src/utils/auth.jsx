@@ -73,7 +73,7 @@ export const refreshAccessToken = async () => {
     );
     const data = response.data;
 
-    storeTokens(data.accessToken, null); // Don't overwrite refresh token
+    storeTokens(data.accessToken, data.refreshToken);
     return data.accessToken;
   } catch (error) {
     console.error("Token refresh failed:", error);
