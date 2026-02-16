@@ -32,6 +32,10 @@ api.interceptors.response.use(
         const newToken = getAccessToken();
         api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+        // Dispatch custom event to notify components that token has been refreshed
+        window.dispatchEvent(new Event("tokenRefreshed"));
+
         return api(originalRequest);
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);

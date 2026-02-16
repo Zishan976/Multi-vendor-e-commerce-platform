@@ -2,53 +2,46 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, Menu, LogOut } from "lucide-react";
 import Filter from "./Filter";
 import { api } from "../utils/api";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import {
   isAuthenticated,
   getUserFromToken,
   clearTokens,
   getRefreshToken,
+  isVendor,
+  isAdmin,
 } from "../utils/auth";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [categories, setCategories] = useState([]);
+  // const [selectedCategory, setSelectedCategory] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [logoutLoading, setLogoutLoading] = useState(false);
-  const navigate = useNavigate();
+  const location = useLocation();
+  // const navigate = useNavigate();
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchTerm.trim()) params.set("search", searchTerm.trim());
-    if (selectedCategory) params.set("category_id", selectedCategory);
-    navigate(`/shop?${params.toString()}`);
-  };
+  // const handleSearch = () => {
+  //   const params = new URLSearchParams();
+  //   if (searchTerm.trim()) params.set("search", searchTerm.trim());
+  //   if (selectedCategory) params.set("category_id", selectedCategory);
+  //   navigate(`/shop?${params.toString()}`);
+  // };
 
-  const handleCategoryChange = (categoryId) => {
-    setSelectedCategory(categoryId);
-    const params = new URLSearchParams();
-    if (searchTerm.trim()) params.set("search", searchTerm.trim());
-    if (categoryId) params.set("category_id", categoryId);
-    navigate(`/shop?${params.toString()}`);
-  };
+  // const handleCategoryChange = (categoryId) => {
+  //   setSelectedCategory(categoryId);
+  //   const params = new URLSearchParams();
+  //   if (searchTerm.trim()) params.set("search", searchTerm.trim());
+  //   if (categoryId) params.set("category_id", categoryId);
+  //   navigate(`/shop?${params.toString()}`);
+  // };
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get("/categories");
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-    fetchCategories();
-
     const checkAuth = () => {
       const authenticated = isAuthenticated();
       setIsLoggedIn(authenticated);
@@ -57,8 +50,21 @@ const Navbar = () => {
         setUser(userData);
       }
     };
+
     checkAuth();
-  }, []);
+
+    // Listen for custom token refresh event from api.jsx
+    const handleTokenRefresh = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("tokenRefreshed", handleTokenRefresh);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("tokenRefreshed", handleTokenRefresh);
+    };
+  }, [location]);
 
   const handleLoginSuccess = () => {
     const userData = getUserFromToken();
@@ -108,12 +114,17 @@ const Navbar = () => {
             <li className="hover:text-green-600 cursor-pointer">
               <Link to="/shop">Shop</Link>
             </li>
-            <li className="border-b-2 border-green-500 cursor-pointer">
-              <Link to="/seller">Seller</Link>
-            </li>
-            <li className="border-b-2 border-green-500 cursor-pointer">
-              <Link to="/admin">Admin</Link>
-            </li>
+            {isVendor() && (
+              <li className="border-b-2 border-green-500 cursor-pointer">
+                {" "}
+                <Link to="/seller">Seller</Link>{" "}
+              </li>
+            )}
+            {isAdmin() && (
+              <li className="border-b-2 border-green-500 cursor-pointer">
+                <Link to="/admin">Admin</Link>
+              </li>
+            )}
           </ul>
 
           {/* <div className="flex gap-1">
@@ -201,16 +212,20 @@ const Navbar = () => {
                   Shop
                 </Link>
               </li>
-              <li className="border-b-2 border-green-500 cursor-pointer">
-                <Link to="/seller" onClick={() => setIsOpen(false)}>
-                  Seller
-                </Link>
-              </li>
-              <li className="border-b-2 border-green-500 cursor-pointer">
-                <Link to="/admin" onClick={() => setIsOpen(false)}>
-                  Admin
-                </Link>
-              </li>
+              {isVendor() && (
+                <li className="border-b-2 border-green-500 cursor-pointer">
+                  <Link to="/seller" onClick={() => setIsOpen(false)}>
+                    Seller
+                  </Link>
+                </li>
+              )}
+              {isAdmin() && (
+                <li className="border-b-2 border-green-500 cursor-pointer">
+                  <Link to="/admin" onClick={() => setIsOpen(false)}>
+                    Admin
+                  </Link>
+                </li>
+              )}
               <li>
                 {isLoggedIn ? (
                   <div className="flex items-center gap-2">
