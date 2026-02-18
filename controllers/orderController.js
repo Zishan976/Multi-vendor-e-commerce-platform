@@ -5,7 +5,9 @@ export const createOrder = async (req, res) => {
     const client = await pool.connect();
     try {
         const { id: userId } = req.user;
-        const { shipping_address } = req.body;
+        const { shipping_address, payment_method } = req.body;
+        const validPaymentMethods = ['bkash', 'nagad', 'rocket', 'cod', 'card'];
+        const payment = validPaymentMethods.includes(payment_method) ? payment_method : null;
 
         await client.query('BEGIN');
 
@@ -35,7 +37,7 @@ export const createOrder = async (req, res) => {
         const totalAmount = cartResult.rows.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
         // Create order
-        const orderResult = await client.query(`INSERT INTO orders (user_id, total_amount, shipping_address) VALUES ($1,$2,$3) RETURNING id`, [userId, totalAmount, shipping_address]);
+        const orderResult = await client.query(`INSERT INTO orders (user_id, total_amount, shipping_address, payment_method) VALUES ($1,$2,$3,$4) RETURNING id`, [userId, totalAmount, shipping_address, payment]);
         const orderId = orderResult.rows[0].id;
 
         // Create order items and update stock

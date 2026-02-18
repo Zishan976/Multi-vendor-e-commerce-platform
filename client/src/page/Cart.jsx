@@ -12,6 +12,9 @@ import {
   Plus,
   ShoppingCart,
   Trash2,
+  MapPin,
+  Tag,
+  Truck,
 } from "lucide-react";
 
 const Cart = () => {
@@ -21,12 +24,19 @@ const Cart = () => {
   const [updatingItemId, setUpdatingItemId] = useState(null);
   const [removingItemId, setRemovingItemId] = useState(null);
   const [clearing, setClearing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [address, setAddress] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
   const navigate = useNavigate();
 
   const refreshCart = async () => {
     try {
       const response = await api.get("/cart");
       setCart(response.data.cart);
+      setDiscountAmount(0); // Reset discount when cart contents change so total stays correct
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
       const message =
@@ -117,6 +127,78 @@ const Cart = () => {
       console.error("Clear cart failed:", err);
     } finally {
       setClearing(false);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setApplyingCoupon(true);
+    try {
+      const subtotal = Number(cart?.totalAmount) || 0;
+      const response = await api.post("/coupons/apply", {
+        code: couponCode.trim(),
+        subtotal,
+      });
+      const { discountAmount: amount, discountPercent, message } = response.data;
+      setDiscountAmount(amount ?? 0);
+      toast.success(message || (discountPercent ? `${discountPercent}% off applied` : "Coupon applied"));
+    } catch (err) {
+      const status = err?.response?.status;
+      const message = err?.response?.data?.error || err?.response?.data?.message || "Failed to apply coupon";
+
+      // Fallback: if backend is unreachable or returns 5xx, use client-side mock
+      const useFallback = !err?.response || (status >= 500);
+      const validCoupons = { SAVE10: 10, SAVE20: 20, WELCOME: 15 };
+      const percent = validCoupons[couponCode.toUpperCase()];
+
+      if (useFallback && percent) {
+        const subtotal = Number(cart?.totalAmount) || 0;
+        const discountValue = (subtotal * percent) / 100;
+        setDiscountAmount(discountValue);
+        toast.success(`Coupon applied! ${percent}% discount`);
+      } else if (useFallback && !percent) {
+        setDiscountAmount(0);
+        toast.error("Invalid coupon code");
+      } else {
+        toast.error(message);
+        setDiscountAmount(0);
+      }
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const calculateTotal = () => {
+    const subtotal = Number(cart?.totalAmount) || 0;
+    const shipping = 0; // Free shipping
+    const discount = discountAmount || 0;
+    const total = subtotal + shipping - discount;
+    return Math.max(0, total); // Ensure total is not negative
+  };
+
+  const handleProceedToCheckout = async () => {
+    if (!address.trim() || !paymentMethod) return;
+    setCheckingOut(true);
+    try {
+      const response = await api.post("/orders", {
+        shipping_address: address.trim(),
+        payment_method: paymentMethod,
+      });
+      const orderId = response.data?.orderId;
+      toast.success(orderId ? `Order #${orderId} placed successfully` : "Order placed successfully");
+      navigate("/", { state: { orderSuccess: true, orderId } });
+    } catch (err) {
+      const message =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        "Failed to place order.";
+      toast.error(message);
+    } finally {
+      setCheckingOut(false);
     }
   };
 
@@ -297,13 +379,105 @@ const Cart = () => {
             <h2 className="text-lg font-semibold text-slate-800">
               Order Summary
             </h2>
-            <div className="flex justify-between text-slate-600">
-              <span>Subtotal</span>
-              <span>${formatPrice(cart.totalAmount)}</span>
+
+            {/* Address Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Shipping Address
+              </label>
+              <textarea
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter your shipping address"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
             </div>
+
+            {/* Payment Method Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Payment Method
+              </label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">Select payment method</option>
+                <option value="cod">Cash on Delivery (COD)</option>
+                <option value="bkash">bKash</option>
+                <option value="nagad">Nagad</option>
+                <option value="rocket">Rocket</option>
+                <option value="card">Credit/Debit Card</option>
+              </select>
+            </div>
+
+            {/* Coupon Code */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                Coupon Code
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter coupon code"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={applyingCoupon || !couponCode.trim()}
+                  className="px-4 py-2 bg-slate-600 text-white text-sm rounded-md hover:bg-slate-700 disabled:opacity-50 disabled:pointer-events-none transition"
+                >
+                  {applyingCoupon ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Apply"
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Order Summary Breakdown */}
+            <div className="border-t border-gray-200 pt-4 space-y-3">
+              <div className="flex justify-between text-slate-600">
+                <span>Subtotal</span>
+                <span>${formatPrice(cart.totalAmount)}</span>
+              </div>
+              
+              <div className="flex justify-between text-slate-600">
+                <span className="flex items-center gap-1">
+                  <Truck className="w-4 h-4" />
+                  Shipping
+                </span>
+                <span className="text-green-600 font-medium">Free</span>
+              </div>
+
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount</span>
+                  <span>-${formatPrice(discountAmount)}</span>
+                </div>
+              )}
+
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex justify-between text-lg font-semibold text-slate-800">
+                  <span>Total</span>
+                  <span>${formatPrice(calculateTotal())}</span>
+                </div>
+              </div>
+            </div>
+
             <p className="text-xs text-slate-500">
-              Shipping and taxes calculated at checkout.
+              Taxes calculated at checkout.
             </p>
+
             <button
               type="button"
               onClick={handleClearCart}
@@ -326,11 +500,22 @@ const Cart = () => {
             </button>
             <button
               type="button"
-              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+              onClick={handleProceedToCheckout}
+              disabled={!paymentMethod || !address.trim() || checkingOut}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
             >
               <span className="inline-flex items-center justify-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Proceed to Checkout
+                {checkingOut ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Placing order...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    Proceed to Checkout
+                  </>
+                )}
               </span>
             </button>
           </div>

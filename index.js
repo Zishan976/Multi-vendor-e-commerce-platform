@@ -12,6 +12,7 @@ import cartRouter from './routes/cartRouter.js'
 import orderRouter from './routes/orderRouter.js'
 import adminRouter from './routes/adminRouter.js'
 import paymentRouter from './routes/paymentRouter.js'
+import couponRouter from './routes/couponRouter.js'
 import passport from './middleware/passportMiddleware.js'
 import { testEmailConnection } from './config/emailConfig.js';
 
@@ -55,6 +56,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/payments', paymentRouter);
+app.use('/api/coupons', couponRouter);
 
 app.get('/', (req, res) => {
     res.send('Welcome to the Multi-Vendor E-Commerce Platform API');
