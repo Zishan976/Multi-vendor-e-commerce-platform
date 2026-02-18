@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, Menu, LogOut } from "lucide-react";
 import Filter from "./Filter";
 import { api } from "../utils/api";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import {
-  isAuthenticated,
+  hasActiveSession,
   getUserFromToken,
   clearTokens,
   getRefreshToken,
@@ -16,55 +16,56 @@ import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // const [categories, setCategories] = useState([]);
-  // const [selectedCategory, setSelectedCategory] = useState("");
-  // const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [logoutLoading, setLogoutLoading] = useState(false);
-  const location = useLocation();
-  // const navigate = useNavigate();
-
-  // const handleSearch = () => {
-  //   const params = new URLSearchParams();
-  //   if (searchTerm.trim()) params.set("search", searchTerm.trim());
-  //   if (selectedCategory) params.set("category_id", selectedCategory);
-  //   navigate(`/shop?${params.toString()}`);
-  // };
-
-  // const handleCategoryChange = (categoryId) => {
-  //   setSelectedCategory(categoryId);
-  //   const params = new URLSearchParams();
-  //   if (searchTerm.trim()) params.set("search", searchTerm.trim());
-  //   if (categoryId) params.set("category_id", categoryId);
-  //   navigate(`/shop?${params.toString()}`);
-  // };
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const checkAuth = () => {
-      const authenticated = isAuthenticated();
+      const authenticated = hasActiveSession();
       setIsLoggedIn(authenticated);
       if (authenticated) {
         const userData = getUserFromToken();
         setUser(userData);
+        // Fetch cart count when user is authenticated
+        fetchCartCount();
+      } else {
+        setCartCount(0);
+      }
+    };
+
+    const fetchCartCount = async () => {
+      try {
+        const response = await api.get("/cart");
+        const itemCount =
+          response.data?.cart?.items?.reduce(
+            (sum, item) => sum + item.quantity,
+            0,
+          ) || 0;
+        setCartCount(itemCount);
+      } catch (error) {
+        console.error("Failed to fetch cart count:", error);
+        setCartCount(0);
       }
     };
 
     checkAuth();
 
-    // Listen for custom token refresh event from api.jsx
-    const handleTokenRefresh = () => {
-      checkAuth();
-    };
+    const handleTokenRefresh = () => checkAuth();
+    const handleSessionEnded = () => checkAuth();
 
     window.addEventListener("tokenRefreshed", handleTokenRefresh);
+    window.addEventListener("sessionEnded", handleSessionEnded);
+    window.addEventListener("cartUpdated", fetchCartCount);
 
-    // Cleanup
     return () => {
       window.removeEventListener("tokenRefreshed", handleTokenRefresh);
+      window.removeEventListener("sessionEnded", handleSessionEnded);
+      window.removeEventListener("cartUpdated", fetchCartCount);
     };
-  }, [location]);
+  }, []);
 
   const handleLoginSuccess = () => {
     const userData = getUserFromToken();
@@ -116,8 +117,7 @@ const Navbar = () => {
             </li>
             {isVendor() && (
               <li className="border-b-2 border-green-500 cursor-pointer">
-                {" "}
-                <Link to="/seller">Seller</Link>{" "}
+                <Link to="/seller">Seller</Link>
               </li>
             )}
             {isAdmin() && (
@@ -127,43 +127,19 @@ const Navbar = () => {
             )}
           </ul>
 
-          {/* <div className="flex gap-1">
-            <input
-              type="text"
-              placeholder="Search products"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
-              }}
-              className="hidden lg:inline px-4 py-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-
-            <select
-              value={selectedCategory}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="hidden lg:inline px-4 py-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
           {/* Cart + Auth (Always Visible) */}
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <ShoppingCart className="w-6 h-6 text-gray-700" />
-              <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
-                9
-              </span>
-            </div>
+            <Link to="/cart" className="relative">
+              <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-green-600 transition-colors" />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full min-w-5 text-center">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
             {isLoggedIn ? (
-              <div className="hidden lg:flex items-center gap-2">
-                <span className=" text-gray-700 text-sm md:text-base">
+              <div className="hidden md:flex items-center gap-2">
+                <span className="hidden lg:block text-gray-700 text-sm md:text-base">
                   Welcome, {user?.email}
                 </span>
                 <button
@@ -228,7 +204,10 @@ const Navbar = () => {
               )}
               <li>
                 {isLoggedIn ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-gray-700 text-sm">
+                      Welcome, {user?.email}
+                    </span>
                     <button
                       onClick={() => {
                         setIsOpen(false);

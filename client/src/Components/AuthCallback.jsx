@@ -23,6 +23,8 @@ const AuthCallback = () => {
           });
           const { accessToken, refreshToken } = response.data;
           storeTokens(accessToken, refreshToken);
+          // Notify app that auth tokens have been set so components (e.g. Navbar) can update
+          window.dispatchEvent(new Event("tokenRefreshed"));
           toast.success("Google login successful!");
           navigate("/");
         } catch (error) {

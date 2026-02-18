@@ -40,7 +40,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
         clearTokens();
-        // Optionally redirect to login page
+        // Notify app (e.g. Navbar) so UI updates to "Login" before redirect
+        window.dispatchEvent(new Event("sessionEnded"));
         window.location.href = "/";
         return Promise.reject(refreshError);
       }

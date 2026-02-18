@@ -57,6 +57,13 @@ export const isAuthenticated = () => {
   }
 };
 
+/** Returns true if user has a valid session (access token valid OR refresh token exists).
+ * Use this for UI (e.g. Navbar) so we don't flip to "Login" when access token expires but refresh token is still valid. */
+export const hasActiveSession = () => {
+  if (isAuthenticated()) return true;
+  return !!getRefreshToken();
+};
+
 export const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
