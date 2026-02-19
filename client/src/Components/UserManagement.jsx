@@ -59,7 +59,7 @@ const UserManagement = ({
             className="px-2 py-1 md:px-4 md:py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCcw
-              className={`w-4 h-4 md:w-6 md:h-6 ${loading ? "animate-spin" : ""}`}
+              className={`w-4 h-4 md:w-6 md:h-6 ${loading ? "animate-spin-reverse" : ""}`}
             />
           </button>
         </div>

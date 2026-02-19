@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import Loading from "./Loading";
+import { RefreshCcw } from "lucide-react";
 
 const OrdersSection = ({
   orders,
@@ -34,9 +35,20 @@ const OrdersSection = ({
 
   return (
     <div className="bg-gray-100 p-5 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-green-600 pb-2">
-        My Orders
-      </h2>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-5 border-b-2 border-green-600 pb-2">
+          My Orders
+        </h2>
+        <button
+          onClick={fetchOrders}
+          disabled={loadingOrders}
+          className="md:px-4 md:py-2 px-2 py-1 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCcw
+            className={`w-4 h-4 md:w-6 md:h-6 ${loadingOrders ? "animate-spin-reverse" : ""}`}
+          />
+        </button>
+      </div>
       {error ? (
         <div className="bg-red-100 text-red-700 p-3 rounded mb-4 border border-red-300">
           {error}
