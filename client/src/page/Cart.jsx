@@ -8,8 +8,6 @@ import {
   ArrowLeft,
   CreditCard,
   Loader2,
-  Minus,
-  Plus,
   ShoppingCart,
   Trash2,
   MapPin,
@@ -143,15 +141,27 @@ const Cart = () => {
         code: couponCode.trim(),
         subtotal,
       });
-      const { discountAmount: amount, discountPercent, message } = response.data;
+      const {
+        discountAmount: amount,
+        discountPercent,
+        message,
+      } = response.data;
       setDiscountAmount(amount ?? 0);
-      toast.success(message || (discountPercent ? `${discountPercent}% off applied` : "Coupon applied"));
+      toast.success(
+        message ||
+          (discountPercent
+            ? `${discountPercent}% off applied`
+            : "Coupon applied"),
+      );
     } catch (err) {
       const status = err?.response?.status;
-      const message = err?.response?.data?.error || err?.response?.data?.message || "Failed to apply coupon";
+      const message =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        "Failed to apply coupon";
 
       // Fallback: if backend is unreachable or returns 5xx, use client-side mock
-      const useFallback = !err?.response || (status >= 500);
+      const useFallback = !err?.response || status >= 500;
       const validCoupons = { SAVE10: 10, SAVE20: 20, WELCOME: 15 };
       const percent = validCoupons[couponCode.toUpperCase()];
 
@@ -189,7 +199,11 @@ const Cart = () => {
         payment_method: paymentMethod,
       });
       const orderId = response.data?.orderId;
-      toast.success(orderId ? `Order #${orderId} placed successfully` : "Order placed successfully");
+      toast.success(
+        orderId
+          ? `Order #${orderId} placed successfully`
+          : "Order placed successfully",
+      );
       navigate("/", { state: { orderSuccess: true, orderId } });
     } catch (err) {
       const message =
@@ -450,7 +464,7 @@ const Cart = () => {
                 <span>Subtotal</span>
                 <span>${formatPrice(cart.totalAmount)}</span>
               </div>
-              
+
               <div className="flex justify-between text-slate-600">
                 <span className="flex items-center gap-1">
                   <Truck className="w-4 h-4" />
@@ -526,3 +540,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
+// @client/src/page/Cart.jsx:501-520 if i click this button it should take to to cate order page where i can watch order history. To be specific in ecah order it should show the products picture their quantity their price , order Id , totoal price, address, status...and what ever you want to add
