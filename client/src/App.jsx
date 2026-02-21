@@ -9,6 +9,7 @@ import AuthCallback from "./Components/AuthCallback";
 import ProductDetail from "./page/ProductDetail";
 import StoreDetail from "./page/StoreDetail";
 import Cart from "./page/Cart";
+import Orders from "./page/Orders";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "/cart",
         element: <Cart />,
+      },
+      {
+        path: "/orders",
+        element: <Orders />,
       },
       {
         path: "/product/:id",

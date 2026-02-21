@@ -197,6 +197,7 @@ const Cart = () => {
       const response = await api.post("/orders", {
         shipping_address: address.trim(),
         payment_method: paymentMethod,
+        discount_amount: discountAmount || 0,
       });
       const orderId = response.data?.orderId;
       toast.success(
@@ -204,7 +205,7 @@ const Cart = () => {
           ? `Order #${orderId} placed successfully`
           : "Order placed successfully",
       );
-      navigate("/", { state: { orderSuccess: true, orderId } });
+      navigate("/orders", { state: { orderSuccess: true, orderId } });
     } catch (err) {
       const message =
         err?.response?.data?.error ||
@@ -540,5 +541,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
-// @client/src/page/Cart.jsx:501-520 if i click this button it should take to to cate order page where i can watch order history. To be specific in ecah order it should show the products picture their quantity their price , order Id , totoal price, address, status...and what ever you want to add

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ShoppingCart, Menu, LogOut } from "lucide-react";
+import { ShoppingCart, Menu, LogOut, Package } from "lucide-react";
 import Filter from "./Filter";
 import { api } from "../utils/api";
 import { Link } from "react-router-dom";
@@ -29,7 +29,6 @@ const Navbar = () => {
       if (authenticated) {
         const userData = getUserFromToken();
         setUser(userData);
-        // Fetch cart count when user is authenticated
         fetchCartCount();
       } else {
         setCartCount(0);
@@ -78,14 +77,11 @@ const Navbar = () => {
     try {
       const refreshToken = getRefreshToken();
       if (refreshToken) {
-        // Call backend logout to revoke refresh token
         await api.post("/auth/logout", { refreshToken });
       }
     } catch (error) {
       console.error("Logout error:", error);
-      // Continue with local logout even if backend call fails
     } finally {
-      // Always clear tokens locally
       clearTokens();
       setUser(null);
       setIsLoggedIn(false);
@@ -115,6 +111,14 @@ const Navbar = () => {
             <li className="hover:text-green-600 cursor-pointer">
               <Link to="/shop">Shop</Link>
             </li>
+            {isLoggedIn && (
+              <li className="hover:text-green-600 cursor-pointer">
+                <Link to="/orders" className="flex items-center gap-1">
+                  <Package className="w-4 h-4" />
+                  Orders
+                </Link>
+              </li>
+            )}
             {isVendor() && (
               <li className="border-b-2 border-green-500 cursor-pointer">
                 <Link to="/seller">Seller</Link>
@@ -188,6 +192,18 @@ const Navbar = () => {
                   Shop
                 </Link>
               </li>
+              {isLoggedIn && (
+                <li className="hover:text-green-600 cursor-pointer">
+                  <Link
+                    to="/orders"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-1"
+                  >
+                    <Package className="w-4 h-4" />
+                    Orders
+                  </Link>
+                </li>
+              )}
               {isVendor() && (
                 <li className="border-b-2 border-green-500 cursor-pointer">
                   <Link to="/seller" onClick={() => setIsOpen(false)}>

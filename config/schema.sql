@@ -1,5 +1,3 @@
-
-
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username TEXT NOT NULL,
@@ -83,8 +81,11 @@ CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     total_amount DECIMAL(10,2) NOT NULL CHECK (total_amount >= 0),
+    discount_amount DECIMAL(10,2) DEFAULT 0,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
     shipping_address TEXT,
+    payment_method TEXT CHECK (payment_method IN ('bkash', 'nagad', 'rocket', 'cod', 'card')),
+    payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'processing', 'completed', 'failed', 'cancelled')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -103,9 +104,6 @@ CREATE INDEX IF NOT EXISTS idx_carts_user_id ON carts(user_id);
 CREATE INDEX IF NOT EXISTS idx_cart_items_cart_id ON cart_items(cart_id);
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-
-ALTER TABLE orders ADD COLUMN payment_method TEXT CHECK (payment_method IN ('bkash', 'nagad', 'rocket', 'cod', 'card'));
-ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'processing', 'completed', 'failed', 'cancelled'));
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id SERIAL PRIMARY KEY,
@@ -134,4 +132,3 @@ CREATE TABLE IF NOT EXISTS coupons (
 );
 
 CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);
-

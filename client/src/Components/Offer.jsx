@@ -6,7 +6,7 @@ const Offer = () => {
   const [visible, setVisible] = useState(true);
 
   const handleClaim = () => {
-    navigator.clipboard.writeText("WELCOME40");
+    navigator.clipboard.writeText("WELCOME");
     toast.success("Coupon copied to clipboard!");
     setVisible(false);
   };
@@ -20,7 +20,7 @@ const Offer = () => {
       {visible && (
         <div className="flex justify-between items-center px-4 py-2 bg-linear-to-r from-purple-600 to-orange-500 text-white shadow-md">
           <span className="md:text-lg text-sm font-semibold">
-            Get 40% OFF on First Order!
+            Get 15% OFF on First Order!
           </span>
           <div className="flex items-center gap-4">
             <button

@@ -20,16 +20,30 @@ export const sendEmail = async (to, subject, html) => {
 
 export const sendOrderConfirmationEmail = async (userEmail, orderDetails) => {
     const subject = 'Order Confirmation - Multi-Vendor E-Commerce';
+
+    // Build price breakdown HTML
+    let priceBreakdown = '';
+    if (orderDetails.discount_amount > 0) {
+        const subtotal = (Number(orderDetails.total_amount) || 0) + (Number(orderDetails.discount_amount) || 0);
+        priceBreakdown = `
+            <p><strong>Subtotal:</strong> $${subtotal.toFixed(2)}</p>
+            <p style="color: green;"><strong>Discount:</strong> -$${Number(orderDetails.discount_amount).toFixed(2)}</p>
+        `;
+    }
+
     const html = `
         <h2>Thank you for your order!</h2>
         <p>Your order has been successfully placed.</p>
         <h3>Order Details:</h3>
         <p><strong>Order ID:</strong> ${orderDetails.id}</p>
+        ${priceBreakdown}
         <p><strong>Total Amount:</strong> $${orderDetails.total_amount}</p>
         <p><strong>Status:</strong> ${orderDetails.status}</p>
+        ${orderDetails.shipping_address ? `<p><strong>Shipping Address:</strong> ${orderDetails.shipping_address}</p>` : ''}
+        ${orderDetails.payment_method ? `<p><strong>Payment Method:</strong> ${orderDetails.payment_method}</p>` : ''}
         <h4>Items:</h4>
         <ul>
-            ${orderDetails.items.map(item => `<li>${item.name} - Quantity: ${item.quantity} - Price: $${item.price}</li>`).join('')}
+            ${orderDetails.items.map(item => `<li>${item.product_name || item.name || 'Product'} - Quantity: ${item.quantity} - Price: $${item.price}</li>`).join('')}
         </ul>
         <p>We will notify you when your order is shipped.</p>
     `;

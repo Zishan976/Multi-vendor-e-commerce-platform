@@ -71,9 +71,6 @@ export const refreshAccessToken = async () => {
   }
 
   try {
-    // Use axios directly to bypass the request interceptor that adds the expired token
-    // The /auth/refresh endpoint now requires authentication, but we'll use a direct axios call
-    // to avoid the circular dependency (interceptor adds expired token -> causes 401 -> tries to refresh)
     const response = await axios.post(
       `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"}/auth/refresh`,
       { refreshToken },

@@ -5,7 +5,7 @@ export const createOrder = async (req, res) => {
     const client = await pool.connect();
     try {
         const { id: userId } = req.user;
-        const { shipping_address, payment_method } = req.body;
+        const { shipping_address, payment_method, discount_amount = 0 } = req.body;
         const validPaymentMethods = ['bkash', 'nagad', 'rocket', 'cod', 'card'];
         const payment = validPaymentMethods.includes(payment_method) ? payment_method : null;
 
@@ -34,10 +34,11 @@ export const createOrder = async (req, res) => {
             }
         }
 
-        const totalAmount = cartResult.rows.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const subtotal = cartResult.rows.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const totalAmount = subtotal - (discount_amount || 0);
 
-        // Create order
-        const orderResult = await client.query(`INSERT INTO orders (user_id, total_amount, shipping_address, payment_method) VALUES ($1,$2,$3,$4) RETURNING id`, [userId, totalAmount, shipping_address, payment]);
+        // Create order with discount
+        const orderResult = await client.query(`INSERT INTO orders (user_id, total_amount, discount_amount, shipping_address, payment_method) VALUES ($1, $2, $3, $4, $5) RETURNING id`, [userId, totalAmount, discount_amount || 0, shipping_address, payment]);
         const orderId = orderResult.rows[0].id;
 
         // Create order items and update stock
@@ -57,7 +58,10 @@ export const createOrder = async (req, res) => {
             const orderDetails = {
                 id: orderId,
                 total_amount: totalAmount,
+                discount_amount: discount_amount || 0,
                 status: 'pending',
+                shipping_address: shipping_address,
+                payment_method: payment,
                 items: cartResult.rows.map(item => ({
                     name: item.name,
                     quantity: item.quantity,
@@ -67,7 +71,6 @@ export const createOrder = async (req, res) => {
             await sendOrderConfirmationEmail(userEmail, orderDetails);
         } catch (emailError) {
             console.error('Failed to send order confirmation email:', emailError);
-            // Don't fail the order creation if email fails
         }
 
         res.json({
@@ -98,18 +101,20 @@ export const getUserOrder = async (req, res) => {
                            'product_id', oi.product_id,
                            'quantity', oi.quantity,
                            'price', oi.price,
-                           'product_name', p.name
+                           'product_name', p.name,
+                           'image_url', p.image_url,
+                           'vendor_name', v.business_name
                        )
                    ) as items
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
+            LEFT JOIN vendors v ON p.vendor_id = v.id
             WHERE o.user_id = $1
             GROUP BY o.id
             ORDER BY o.created_at DESC
             LIMIT $2 OFFSET $3
         `, [userId, parsedLimit, offset]);
-
 
         const countResult = await pool.query('SELECT COUNT(*) FROM orders WHERE user_id = $1', [userId]);
 
@@ -144,6 +149,7 @@ export const getOrderById = async (req, res) => {
                                 'quantity', oi.quantity,
                                 'price', oi.price,
                                 'product_name', p.name,
+                                'image_url', p.image_url,
                                 'vendor_name', v.business_name
                             )) AS items
             FROM orders o
