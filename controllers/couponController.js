@@ -1,5 +1,103 @@
 import { pool } from "../config/db.js";
 
+// Get all coupons
+export const getAllCoupons = async (req, res) => {
+    try {
+        const coupons = await pool.query(`
+            SELECT * FROM coupons
+            ORDER BY created_at DESC
+        `);
+
+        res.json(coupons.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch coupons' });
+    }
+};
+
+// Create a new coupon
+export const createCoupon = async (req, res) => {
+    try {
+        const { code, discount_type, discount_value, valid_from, valid_until, usage_limit } = req.body;
+
+        // Validation
+        if (!code || !discount_type || !discount_value) {
+            return res.status(400).json({ error: 'Code, discount type, and discount value are required' });
+        }
+
+        if (!['percent', 'fixed'].includes(discount_type)) {
+            return res.status(400).json({ error: 'Discount type must be either "percent" or "fixed"' });
+        }
+
+        const discountValueNum = parseFloat(discount_value);
+        if (isNaN(discountValueNum) || discountValueNum <= 0) {
+            return res.status(400).json({ error: 'Discount value must be a positive number' });
+        }
+
+        // Check if coupon code already exists
+        const existingCoupon = await pool.query(
+            'SELECT id FROM coupons WHERE UPPER(code) = UPPER($1)',
+            [code.trim()]
+        );
+
+        if (existingCoupon.rows.length > 0) {
+            return res.status(400).json({ error: 'Coupon code already exists' });
+        }
+
+        // Validate dates if provided
+        if (valid_from && valid_until) {
+            const fromDate = new Date(valid_from);
+            const untilDate = new Date(valid_until);
+            if (fromDate > untilDate) {
+                return res.status(400).json({ error: 'Valid from date must be before valid until date' });
+            }
+        }
+
+        const result = await pool.query(
+            `INSERT INTO coupons (code, discount_type, discount_value, valid_from, valid_until, usage_limit)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+            [
+                code.trim().toUpperCase(),
+                discount_type,
+                discountValueNum,
+                valid_from || null,
+                valid_until || null,
+                usage_limit ? parseInt(usage_limit) : null
+            ]
+        );
+
+        res.status(201).json({
+            message: 'Coupon created successfully',
+            coupon: result.rows[0]
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to create coupon' });
+    }
+};
+
+// Delete a coupon
+export const deleteCoupon = async (req, res) => {
+    try {
+        const { couponId } = req.params;
+
+        const result = await pool.query(
+            'DELETE FROM coupons WHERE id = $1 RETURNING *',
+            [couponId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Coupon not found' });
+        }
+
+        res.json({ message: 'Coupon deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to delete coupon' });
+    }
+};
+
 /**
  * POST /api/coupons/apply
  * Body: { code: string, subtotal: number }

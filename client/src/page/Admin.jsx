@@ -3,6 +3,7 @@ import PendingVendors from "../Components/PendingVendors";
 import UserManagement from "../Components/UserManagement";
 import AdminDashboard from "../Components/AdminDashboard";
 import CategoryManagement from "../Components/CategoryManagement";
+import CouponManagement from "../Components/CouponManagement";
 import { api } from "../utils/api";
 // import { useNavigate } from "react-router-dom";
 import { isAdmin } from "../utils/auth";
@@ -14,14 +15,17 @@ const Admin = () => {
   const [pendingVendors, setPendingVendors] = useState([]);
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
   const [success, setSuccess] = useState("");
   const [errorDashboard, setErrorDashboard] = useState("");
   const [errorPending, setErrorPending] = useState("");
   const [errorUsers, setErrorUsers] = useState("");
   const [errorCategories, setErrorCategories] = useState("");
+  const [errorCoupons, setErrorCoupons] = useState("");
   const [loadingStats, setLoadingStats] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -46,6 +50,8 @@ const Admin = () => {
       fetchUsers();
     } else if (activeTab === "categories" && categories.length === 0) {
       fetchCategories();
+    } else if (activeTab === "coupons" && coupons.length === 0) {
+      fetchCoupons();
     }
   }, [activeTab]);
 
@@ -59,6 +65,19 @@ const Admin = () => {
       setErrorCategories("Failed to fetch categories.");
     } finally {
       setLoadingCategories(false);
+    }
+  };
+
+  const fetchCoupons = async () => {
+    setLoadingCoupons(true);
+    setErrorCoupons("");
+    try {
+      const response = await api.get("/coupons");
+      setCoupons(response.data);
+    } catch (err) {
+      setErrorCoupons("Failed to fetch coupons.");
+    } finally {
+      setLoadingCoupons(false);
     }
   };
 
@@ -102,34 +121,17 @@ const Admin = () => {
     }
   };
 
-  const activatebuttons = ["dashboard", "pending", "users", "categories"];
+  const activatebuttons = [
+    "dashboard",
+    "pending",
+    "users",
+    "categories",
+    "coupons",
+  ];
 
   // If not admin, show access denied message
   if (!isAdmin()) {
     return (
-      // <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      //   <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-      //     <div className="mb-6">
-      //       <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
-      //         <TriangleAlert className="h-8 w-8 text-red-600" />
-      //       </div>
-      //       <h2 className="mt-4 text-2xl font-bold text-gray-900">
-      //         Access Denied
-      //       </h2>
-      //       <p className="mt-2 text-gray-600">
-      //         You are not an admin. You don't have permission to access this
-      //         page.
-      //       </p>
-      //     </div>
-      //     <button
-      //       onClick={() => navigate(-1)}
-      //       className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-      //     >
-      //       Go Back Home
-      //     </button>
-      //   </div>
-      // </div>
-
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">
@@ -202,6 +204,15 @@ const Admin = () => {
           loadingCategories={loadingCategories}
           fetchCategories={fetchCategories}
           errorCategories={errorCategories}
+          setSuccess={setSuccess}
+        />
+      )}
+      {activeTab === "coupons" && (
+        <CouponManagement
+          coupons={coupons}
+          loadingCoupons={loadingCoupons}
+          fetchCoupons={fetchCoupons}
+          errorCoupons={errorCoupons}
           setSuccess={setSuccess}
         />
       )}
