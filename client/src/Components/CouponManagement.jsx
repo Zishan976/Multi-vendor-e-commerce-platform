@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { api } from "../utils/api";
 import { Trash2, Plus, Tag } from "lucide-react";
 import Loading from "./Loading";
@@ -16,7 +17,7 @@ const CouponManagement = ({
   const [formData, setFormData] = useState({
     code: "",
     discount_type: "percent",
-    discount_value: "",
+    discount_value: "", // still string for the <input>, could be number
     valid_from: "",
     valid_until: "",
     usage_limit: "",
@@ -24,7 +25,9 @@ const CouponManagement = ({
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    setError(errorCoupons);
+    if (errorCoupons) {
+      setError(errorCoupons);
+    }
   }, [errorCoupons]);
 
   useEffect(() => {
@@ -34,6 +37,17 @@ const CouponManagement = ({
     }
   }, [error]);
 
+  const resetForm = () => {
+    setFormData({
+      code: "",
+      discount_type: "percent",
+      discount_value: "",
+      valid_from: "",
+      valid_until: "",
+      usage_limit: "",
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -41,9 +55,19 @@ const CouponManagement = ({
       setError("Coupon code is required.");
       return;
     }
-    if (!formData.discount_value || parseFloat(formData.discount_value) <= 0) {
+    const dv = parseFloat(formData.discount_value);
+    if (isNaN(dv) || dv <= 0) {
       setError("Discount value must be a positive number.");
       return;
+    }
+
+    if (formData.valid_from && formData.valid_until) {
+      const from = new Date(formData.valid_from);
+      const until = new Date(formData.valid_until);
+      if (until < from) {
+        setError("Valid until date must be on or after the valid from date.");
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -51,11 +75,11 @@ const CouponManagement = ({
       const payload = {
         code: formData.code.trim().toUpperCase(),
         discount_type: formData.discount_type,
-        discount_value: parseFloat(formData.discount_value),
+        discount_value: dv,
         valid_from: formData.valid_from || null,
         valid_until: formData.valid_until || null,
         usage_limit: formData.usage_limit
-          ? parseInt(formData.usage_limit)
+          ? parseInt(formData.usage_limit, 10)
           : null,
       };
 
@@ -63,14 +87,7 @@ const CouponManagement = ({
       setSuccess("Coupon created successfully!");
       fetchCoupons();
       setShowModal(false);
-      setFormData({
-        code: "",
-        discount_type: "percent",
-        discount_value: "",
-        valid_from: "",
-        valid_until: "",
-        usage_limit: "",
-      });
+      resetForm();
     } catch (err) {
       setError(err.response?.data?.error || "Failed to create coupon.");
     } finally {
@@ -91,14 +108,7 @@ const CouponManagement = ({
   };
 
   const openAddModal = () => {
-    setFormData({
-      code: "",
-      discount_type: "percent",
-      discount_value: "",
-      valid_from: "",
-      valid_until: "",
-      usage_limit: "",
-    });
+    resetForm();
     setShowModal(true);
   };
 
@@ -348,6 +358,19 @@ const CouponManagement = ({
       )}
     </div>
   );
+};
+
+CouponManagement.propTypes = {
+  coupons: PropTypes.arrayOf(PropTypes.object).isRequired,
+  loadingCoupons: PropTypes.bool,
+  fetchCoupons: PropTypes.func.isRequired,
+  errorCoupons: PropTypes.string,
+  setSuccess: PropTypes.func.isRequired,
+};
+
+CouponManagement.defaultProps = {
+  loadingCoupons: false,
+  errorCoupons: "",
 };
 
 export default CouponManagement;
