@@ -10,6 +10,9 @@ import ProductDetail from "./page/ProductDetail";
 import StoreDetail from "./page/StoreDetail";
 import Cart from "./page/Cart";
 import Orders from "./page/Orders";
+import VendorRegister from "./page/VendorRegister";
+import PaymentPage from "./page/PaymentPage";
+import PaymentCallback from "./page/PaymentCallback";
 
 const router = createBrowserRouter([
   {
@@ -17,42 +20,19 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <ErrorPage />,
     children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
-      {
-        path: "/shop",
-        element: <Shop />,
-      },
-      {
-        path: "/cart",
-        element: <Cart />,
-      },
-      {
-        path: "/orders",
-        element: <Orders />,
-      },
-      {
-        path: "/product/:id",
-        element: <ProductDetail />,
-      },
-      {
-        path: "/seller",
-        element: <Seller />,
-      },
-      {
-        path: "/store/:vendorId",
-        element: <StoreDetail />,
-      },
-      {
-        path: "/admin",
-        element: <Admin />,
-      },
-      {
-        path: "/auth/callback",
-        element: <AuthCallback />,
-      },
+      { path: "/", element: <Home /> },
+      { path: "/shop", element: <Shop /> },
+      { path: "/cart", element: <Cart /> },
+      { path: "/orders", element: <Orders /> },
+      { path: "/product/:id", element: <ProductDetail /> },
+      { path: "/seller", element: <Seller /> },
+      { path: "/store/:vendorId", element: <StoreDetail /> },
+      { path: "/admin", element: <Admin /> },
+      { path: "/auth/callback", element: <AuthCallback /> },
+      { path: "/vendor/register", element: <VendorRegister /> },
+      { path: "/payment", element: <PaymentPage /> },
+      { path: "/payment/:method", element: <PaymentPage /> },
+      { path: "/payment/callback", element: <PaymentCallback /> },
     ],
   },
 ]);

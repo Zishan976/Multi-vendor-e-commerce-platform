@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { ShoppingCart, Menu, LogOut, Package } from "lucide-react";
+import { ShoppingCart, Menu, LogOut, Package, User, Store } from "lucide-react";
 import Filter from "./Filter";
 import { api } from "../utils/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import {
   hasActiveSession,
@@ -21,6 +21,8 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = () => {
@@ -87,6 +89,7 @@ const Navbar = () => {
       setIsLoggedIn(false);
       setLogoutLoading(false);
       toast.success("Logged out successfully");
+      navigate("/");
     }
   };
 
@@ -142,22 +145,45 @@ const Navbar = () => {
               )}
             </Link>
             {isLoggedIn ? (
-              <div className="hidden md:flex items-center gap-2">
-                <span className="hidden lg:block text-gray-700 text-sm md:text-base">
-                  Welcome, {user?.email}
-                </span>
+              <div className="hidden md:flex items-center gap-2 relative">
                 <button
-                  onClick={handleLogout}
-                  disabled={logoutLoading}
-                  className="bg-red-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 text-gray-700 hover:text-green-600 transition"
                 >
-                  {logoutLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
-                  ) : (
-                    <LogOut className="w-4 h-4" />
-                  )}
-                  Logout
+                  <User className="w-5 h-5" />
+                  <span className="hidden lg:block text-sm md:text-base">
+                    {user?.email}
+                  </span>
                 </button>
+
+                {/* User Dropdown */}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                    <Link
+                      to="/vendor/register"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    >
+                      <Store className="w-4 h-4" />
+                      Become a Vendor
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsDropdownOpen(false);
+                      }}
+                      disabled={logoutLoading}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left disabled:opacity-50"
+                    >
+                      {logoutLoading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <LogOut className="w-4 h-4" />
+                      )}
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <button
@@ -224,6 +250,14 @@ const Navbar = () => {
                     <span className="text-gray-700 text-sm">
                       Welcome, {user?.email}
                     </span>
+                    <Link
+                      to="/vendor/register"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2 bg-green-600 text-white md:px-4 md:py-2 px-2 py-1 rounded md:text-base text-sm hover:bg-green-700 transition"
+                    >
+                      <Store className="w-4 h-4" />
+                      Become a Vendor
+                    </Link>
                     <button
                       onClick={() => {
                         setIsOpen(false);

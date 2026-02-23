@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
 import { hasActiveSession } from "../utils/auth";
 import Loading from "../Components/Loading";
+import toast from "react-hot-toast";
 import {
   ArrowLeft,
   Package,
@@ -12,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   ShoppingBag,
+  Wallet,
 } from "lucide-react";
 
 const Orders = () => {
@@ -47,6 +49,10 @@ const Orders = () => {
 
   const toggleOrderExpand = (orderId) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
+  };
+
+  const handlePayNow = (orderId) => {
+    navigate(`/payment?orderId=${orderId}`);
   };
 
   const formatPrice = (value) =>
@@ -176,7 +182,7 @@ const Orders = () => {
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <span className="font-semibold text-slate-800">
                         Order #{order.id}
                       </span>
@@ -188,6 +194,29 @@ const Orders = () => {
                         {order.status?.charAt(0).toUpperCase() +
                           order.status?.slice(1) || "Pending"}
                       </span>
+                      {/* Payment Status Badge */}
+                      {(order.payment_status === "pending" ||
+                        !order.payment_status) &&
+                        order.payment_method !== "cod" && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Payment Pending
+                          </span>
+                        )}
+                      {order.payment_status === "processing" && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Processing
+                        </span>
+                      )}
+                      {order.payment_status === "completed" && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Paid
+                        </span>
+                      )}
+                      {order.payment_status === "failed" && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Payment Failed
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
                       <span className="flex items-center gap-1">
@@ -342,6 +371,21 @@ const Orders = () => {
                       </span>
                     </div>
                   </div>
+
+                  {/* Pay Now Button for Pending Payments */}
+                  {(order.payment_status === "pending" ||
+                    !order.payment_status) &&
+                    order.payment_method !== "cod" && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <button
+                          onClick={() => handlePayNow(order.id)}
+                          className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+                        >
+                          <Wallet className="w-4 h-4" />
+                          Pay Now
+                        </button>
+                      </div>
+                    )}
                 </div>
               )}
             </div>

@@ -28,7 +28,8 @@ export const initiatePayment = async (req, res) => {
 
         await pool.query('UPDATE orders SET payment_method = $1, payment_status = $2 WHERE id = $3', [paymentMethod, 'processing', orderId]);
 
-        const redirectUrl = `/payment/${paymentMethod}?orderId=${orderId}`;
+        const fontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const redirectUrl = `${fontendUrl}/payment/${paymentMethod}?orderId=${orderId}`;
         res.json({ redirectUrl, message: 'Redirect to payment gateway' });
     } catch (error) {
         console.error(error);
@@ -41,13 +42,26 @@ export const processPayment = async (req, res) => {
     const { paymentMethod } = req.query;
 
     try {
+        // Check if order exists - no user check needed for this public endpoint
+        const orderCheck = await pool.query('SELECT id, payment_status FROM orders WHERE id = $1', [orderId]);
+
+        if (!orderCheck.rows.length) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Don't process if already completed
+        if (orderCheck.rows[0].payment_status === 'completed') {
+            const fontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            return res.redirect(`${fontendUrl}/payment/callback?orderId=${orderId}&status=completed&message=Payment already completed`);
+        }
+
         const result = simulatePayment(paymentMethod);
         const status = result.success ? 'completed' : 'failed';
 
         await pool.query('UPDATE orders SET payment_status = $1 WHERE id = $2', [status, orderId]);
 
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-        res.redirect(`${baseUrl}/payment/callback?orderId=${orderId}&status=${status}&message=${encodeURIComponent(result.message)}`);
+        const fontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${fontendUrl}/payment/callback?orderId=${orderId}&status=${status}&message=${encodeURIComponent(result.message)}`);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Payment processing failed' });
