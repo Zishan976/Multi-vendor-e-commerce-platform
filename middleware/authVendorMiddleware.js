@@ -13,9 +13,9 @@ export const authenticateVendor = (req, res, next) => {
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
-            res.status(401).json({ error: "Token expired" });
+            return res.status(401).json({ error: "Token expired" });
         } else {
-            res.status(403).json({ error: "Invalid token" });
+            return res.status(403).json({ error: "Invalid token" });
         }
     }
 };

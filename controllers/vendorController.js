@@ -87,7 +87,7 @@ export const updateVendorProfile = async (req, res) => {
     }
 }
 
-export const getVenderStatus = async (req, res) => {
+export const getVendorStatus = async (req, res) => {
     const { id: user_id, role } = req.user;
     if (role !== 'vendor') {
         return res.status(403).json({ error: 'Access denied. Vendor role required' });

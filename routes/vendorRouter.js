@@ -1,5 +1,5 @@
 import express from 'express';
-import { getVendorProfile, updateVendorProfile, vendorSignup, getVenderStatus, getVendorProfileById } from '../controllers/vendorController.js';
+import { getVendorProfile, updateVendorProfile, vendorSignup, getVendorStatus, getVendorProfileById } from '../controllers/vendorController.js';
 import { authenticateVendor } from '../middleware/authVendorMiddleware.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import { getOrderedProductByIdOfVendor, getOrderedProductsOfVendor, UpdateOrderedProductStatus } from '../controllers/vendorOrderController.js';
@@ -10,7 +10,7 @@ router.post('/signup', authenticateUser, vendorSignup);
 router.get('/profile', authenticateVendor, getVendorProfile);
 router.get('/profile/:vendorId', getVendorProfileById);
 router.put('/profile', authenticateVendor, updateVendorProfile);
-router.get('/status', authenticateVendor, getVenderStatus);
+router.get('/status', authenticateVendor, getVendorStatus);
 
 //Order management of vendor
 router.use(authenticateVendor)

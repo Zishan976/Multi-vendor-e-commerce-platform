@@ -15,6 +15,7 @@ import paymentRouter from './routes/paymentRouter.js'
 import couponRouter from './routes/couponRouter.js'
 import passport from './middleware/passportMiddleware.js'
 import { testEmailConnection } from './config/emailConfig.js';
+import { testConnection } from './config/db.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +34,9 @@ app.use('/uploads', express.static('uploads'));
 
 // Test email connection on startup (optional)
 testEmailConnection();
+
+// Test database connection on startup
+testConnection()
 
 // Session configuration for Passport
 app.use(session({

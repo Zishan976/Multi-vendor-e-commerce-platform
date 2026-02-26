@@ -13,6 +13,7 @@ import Orders from "./page/Orders";
 import VendorRegister from "./page/VendorRegister";
 import PaymentPage from "./page/PaymentPage";
 import PaymentCallback from "./page/PaymentCallback";
+import ErrorBoundary from "./Components/ErrorBoundary";
 
 const router = createBrowserRouter([
   {
@@ -38,5 +39,9 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  );
 }
