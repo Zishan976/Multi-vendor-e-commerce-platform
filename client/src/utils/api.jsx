@@ -6,6 +6,7 @@ export const api = axios.create({
     import.meta.env.VITE_API_BASE_URL ||
     "https://multi-vendor-e-commerce-platform-4vxy.onrender.com/api" ||
     "http://localhost:3000/api",
+  withCredentials: true, // Required for sending cookies in cross-origin requests (OAuth flow)
 });
 
 // Request deduplication map
