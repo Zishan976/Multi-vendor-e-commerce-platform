@@ -73,7 +73,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/coupons', couponRouter);
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     res.send('Welcome to the Multi-Vendor E-Commerce Platform API');
 });
 
