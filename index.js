@@ -16,9 +16,20 @@ import couponRouter from './routes/couponRouter.js'
 import passport from './middleware/passportMiddleware.js'
 import { testEmailConnection } from './config/emailConfig.js';
 import { testConnection } from './config/db.js';
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, '/client/dist')));
+
+app.get(/^(?!\/api\/).*$/, (req, res) => {
+    res.sendFile(path.join(__dirname, '/client/dist/index.html'));
+});
+
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors({

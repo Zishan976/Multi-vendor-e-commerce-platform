@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import axios from "axios";
+import { api } from "./api";
 
 export const storeTokens = (accessToken, refreshToken) => {
   localStorage.setItem("accessToken", accessToken);
@@ -71,10 +71,7 @@ export const refreshAccessToken = async () => {
   }
 
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"}/auth/refresh`,
-      { refreshToken },
-    );
+    const response = await api.post("/auth/refresh", { refreshToken });
     const data = response.data;
 
     storeTokens(data.accessToken, data.refreshToken);
