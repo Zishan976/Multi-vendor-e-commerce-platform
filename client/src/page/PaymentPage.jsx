@@ -123,7 +123,9 @@ const PaymentPage = () => {
 
       // Step 2: Redirect to the process endpoint (no auth needed)
       const baseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+        import.meta.env.VITE_API_BASE_URL ||
+        "https://multi-vendor-e-commerce-platform-4vxy.onrender.com/api" ||
+        "http://localhost:3000/api";
       const processUrl = `${baseUrl}/payments/process/${orderId}?paymentMethod=${paymentMethod}`;
 
       // Use window.location to allow the redirect to happen naturally
