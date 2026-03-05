@@ -14,7 +14,6 @@ const LatestProducts = () => {
       setLoading(true);
       setError(false);
       const response = await api.get("/products/public/latest");
-      console.log(response.data);
       setLatestProducts(response.data.products);
     } catch (error) {
       console.error(error);
@@ -30,7 +29,12 @@ const LatestProducts = () => {
 
   return (
     <div className="px-6 my-30 max-w-6xl mx-auto">
-      <Title title="Latest Products" description="Showing 4 of 12 products" />
+      <Title
+        title="Latest Products"
+        description="Showing 4 of 12 products"
+        href="/shop"
+        visibleButton={!error && !loading}
+      />
       <div className="mt-12">
         {loading ? (
           <Loading />

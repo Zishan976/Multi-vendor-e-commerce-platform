@@ -15,7 +15,6 @@ const BestSelling = () => {
       setLoading(true);
       setError(false);
       const response = await api.get("/products/public/best");
-      console.log(response.data);
       setBestSellingProducts(response.data.products);
     } catch (error) {
       console.error(error);
@@ -31,7 +30,12 @@ const BestSelling = () => {
 
   return (
     <div className="px-6 my-30 max-w-6xl mx-auto">
-      <Title title="Best Selling" description="Showing 8 of 12 products" />
+      <Title
+        title="Best Selling"
+        description="Showing 8 of 12 products"
+        href="/shop"
+        visibleButton={!error && !loading}
+      />
       <div className="mt-12">
         {loading ? (
           <Loading />
